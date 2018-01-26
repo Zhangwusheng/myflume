@@ -136,22 +136,35 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put ("AEP.channels.memchannelRedis.keep-alive","3");
   
     
-    convertedConfig.put ("AEP.sinks.hbaseSink.type","org.apache.flume.sink.hbase.HBaseSink");
+    convertedConfig.put ("AEP.sinks.hbaseSink.type","com.ctg.aep.sink.hbase.HBaseSink");
     convertedConfig.put ("AEP.sinks.hbaseSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
     convertedConfig.put ("AEP.sinks.hbaseSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
+    convertedConfig.put ("AEP.sinks.hbaseSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
     convertedConfig.put ("AEP.sinks.hbaseSink.enableWal","true");
     convertedConfig.put ("AEP.sinks.hbaseSink.coalesceIncrements","false");
+    convertedConfig.put ("AEP.sinks.hbaseSink.channel","memchannelHbase");
+    
+    //是否自动创建命名空间，在序列化的时候需要用到
+    convertedConfig.put ("AEP.sinks.hbaseSink.serializer.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
+    convertedConfig.put ("AEP.sinks.hbaseSink.serializer.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+      
   
-  
-    convertedConfig.put ("AEP.sinks.redisSink.type","org.apache.flume.sink.hbase.HBaseSink");
+    convertedConfig.put ("AEP.sinks.redisSink.type","com.ctg.aep.sink.hbase.HBaseSink");
     convertedConfig.put ("AEP.sinks.redisSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
     convertedConfig.put ("AEP.sinks.redisSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
     convertedConfig.put ("AEP.sinks.redisSink.enableWal","true");
     convertedConfig.put ("AEP.sinks.redisSink.coalesceIncrements","false");
+    convertedConfig.put ("AEP.sinks.redisSink.channel","memchannelRedis");
+    convertedConfig.put ("AEP.sinks.redisSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
+    convertedConfig.put ("AEP.sinks.redisSink.serializer.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
+    convertedConfig.put ("AEP.sinks.redisSink.serializer.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
   
-    
+  
     if( verbose ){
-      LOGGER.info ("Config:{}", convertedConfig.toString () );
+      LOGGER.info ( "=================================" );
+      for ( String s : convertedConfig.keySet ( ) ) {
+        System.out.println (s+"="+convertedConfig.get (s) );
+      }
     }
   }
 

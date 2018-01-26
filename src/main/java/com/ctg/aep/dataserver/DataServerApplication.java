@@ -29,6 +29,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import org.apache.commons.cli.*;
 import org.apache.flume.*;
+import org.apache.flume.conf.FlumeConfiguration;
 import org.apache.flume.instrumentation.MonitorService;
 import org.apache.flume.instrumentation.MonitoringType;
 import org.apache.flume.lifecycle.LifecycleAware;
@@ -39,7 +40,9 @@ import org.apache.flume.node.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -49,13 +52,15 @@ public class DataServerApplication {
   private static final Logger logger = LoggerFactory
           .getLogger(DataServerApplication.class);
   
-  public static final String CONF_MONITOR_PREFIX = "flume.monitoring.";
+//  public static final String CONF_MONITOR_PREFIX = "flume.monitoring.";
+  public static final String CONF_MONITOR_PREFIX = "aep.monitoring.";
   
   
   private final List<LifecycleAware> components;
   private final LifecycleSupervisor supervisor;
   private MaterializedConfiguration materializedConfiguration;
   private MonitorService monitorServer;
+  private String configPropertiesFile;
   
   public DataServerApplication () {
     this(new ArrayList<LifecycleAware>(0));
@@ -183,25 +188,67 @@ public class DataServerApplication {
   
   @SuppressWarnings("unchecked")
   private void loadMonitoring() {
-    Properties systemProps = System.getProperties();
-    Set<String> keys = systemProps.stringPropertyNames();
+    
+    if( configPropertiesFile == null || configPropertiesFile.isEmpty () ){
+      logger.warn("configPropertiesFile is null,failed to loadMonitoring");
+      return;
+    }
+  
+    
+    BufferedReader reader = null;
     try {
+      reader = new BufferedReader(new FileReader (configPropertiesFile));
+      Properties properties = new Properties();
+      properties.load(reader);
+  
+      Set<String> keys = properties.stringPropertyNames();
+  
       Class<? extends MonitorService> klass = MonitoringType.HTTP.getMonitorClass ();
       this.monitorServer = klass.newInstance();
       Context context = new Context();
       for (String key : keys) {
-        if (key.startsWith(CONF_MONITOR_PREFIX)) {
-          context.put(key.substring(CONF_MONITOR_PREFIX.length()),
-                  systemProps.getProperty(key));
+        if ( key.startsWith ( CONF_MONITOR_PREFIX ) ) {
+          context.put ( key.substring ( CONF_MONITOR_PREFIX.length ( ) ),
+                  properties.getProperty ( key ) );
         }
       }
-      monitorServer.configure(context);
-      monitorServer.start();
-    } catch (Exception e) {
+      
+    } catch (IOException ex) {
+      logger.error("Unable to load file:" + configPropertiesFile
+              + " (I/O failure) - Exception follows.", ex);
+    }catch (Exception e) {
       logger.warn("Error starting monitoring. "
               + "Monitoring might not be available.", e);
+    }finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException ex) {
+          logger.warn( "Unable to close file reader for file: " + configPropertiesFile, ex);
+        }
+      }
     }
     
+//    Properties systemProps = System.getProperties();
+//    Set<String> keys = systemProps.stringPropertyNames();
+//    try {
+//      Class<? extends MonitorService> klass = MonitoringType.HTTP.getMonitorClass ();
+//      this.monitorServer = klass.newInstance();
+//      Context context = new Context();
+//      for (String key : keys) {
+//        if (key.startsWith(CONF_MONITOR_PREFIX)) {
+//          context.put(key.substring(CONF_MONITOR_PREFIX.length()),
+//                  systemProps.getProperty(key));
+//        }
+//      }
+//
+//      monitorServer.configure(context);
+//      monitorServer.start();
+//    } catch (Exception e) {
+//      logger.warn("Error starting monitoring. "
+//              + "Monitoring might not be available.", e);
+//    }
+//
   }
   
   public static void main(String[] args) {

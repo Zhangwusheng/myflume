@@ -73,7 +73,7 @@
         <!--</fileSet>-->
 
         <fileSet>
-            <directory>${project.basedir}/src/main/bin</directory>
+            <directory>${project.basedir}/bin</directory>
             <outputDirectory>bin</outputDirectory>
             <fileMode>755</fileMode>
         </fileSet>

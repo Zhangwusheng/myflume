@@ -1013,7 +1013,7 @@ public class FlumeConfiguration {
       if (cnck != null) {
         // it is a sink
         String name = cnck.getComponentName().trim();
-        logger.info("Processing:" + name);
+        logger.debug ("Processing:" + name);
         Context sinkConf = sinkContextMap.get(name);
 
         if (sinkConf == null) {

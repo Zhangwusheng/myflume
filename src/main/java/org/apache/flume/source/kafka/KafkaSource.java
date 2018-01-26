@@ -17,6 +17,7 @@
 package org.apache.flume.source.kafka;
 
 //import java.io.ByteArrayInputStream;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import org.apache.flume.event.EventBuilder;
 import org.apache.flume.instrumentation.kafka.KafkaSourceCounter;
 import org.apache.flume.source.AbstractPollableSource;
 //import org.apache.flume.source.avro.AvroFlumeEvent;
+import org.apache.flume.source.avro.AvroFlumeEvent;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
@@ -113,7 +115,7 @@ public class KafkaSource extends AbstractPollableSource
 
   private Map<String, String> headers;
 
-//  private Optional<SpecificDatumReader<AvroFlumeEvent>> reader = Optional.absent();
+  private Optional<SpecificDatumReader<AvroFlumeEvent >> reader = Optional.absent();
   private BinaryDecoder decoder = null;
 
   private boolean useAvroEventFormat;
@@ -223,28 +225,28 @@ public class KafkaSource extends AbstractPollableSource
         kafkaKey = message.key();
         kafkaMessage = message.value();
   
-        useAvroEventFormat = false;//zws
-//        if (useAvroEventFormat) {
-//          //Assume the event is in Avro format using the AvroFlumeEvent schema
-//          //Will need to catch the exception if it is not
-//          ByteArrayInputStream in =
-//                  new ByteArrayInputStream(message.value());
-//          decoder = DecoderFactory.get().directBinaryDecoder(in, decoder);
-//          if (!reader.isPresent()) {
-//            reader = Optional.of(
-//                    new SpecificDatumReader<AvroFlumeEvent>(AvroFlumeEvent.class));
-//          }
-//          //This may throw an exception but it will be caught by the
-//          //exception handler below and logged at error
-//          AvroFlumeEvent avroevent = reader.get().read(null, decoder);
-//
-//          eventBody = avroevent.getBody().array();
-//          headers = toStringMap(avroevent.getHeaders());
-//        } else {
+//        useAvroEventFormat = false;//zws
+        if (useAvroEventFormat) {
+          //Assume the event is in Avro format using the AvroFlumeEvent schema
+          //Will need to catch the exception if it is not
+          ByteArrayInputStream in =
+                  new ByteArrayInputStream (message.value());
+          decoder = DecoderFactory.get().directBinaryDecoder(in, decoder);
+          if (!reader.isPresent()) {
+            reader = Optional.of(
+                    new SpecificDatumReader<AvroFlumeEvent>(AvroFlumeEvent.class));
+          }
+          //This may throw an exception but it will be caught by the
+          //exception handler below and logged at error
+          AvroFlumeEvent avroevent = reader.get().read(null, decoder);
+
+          eventBody = avroevent.getBody().array();
+          headers = toStringMap(avroevent.getHeaders());
+        } else {
           eventBody = message.value();
           headers.clear();
           headers = new HashMap<String, String>(4);
-//        }
+        }
 
         // Add headers to event (timestamp, topic, partition, key) only if they don't exist
         if (!headers.containsKey(KafkaSourceConstants.TIMESTAMP_HEADER)) {
