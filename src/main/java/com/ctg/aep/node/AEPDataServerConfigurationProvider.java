@@ -145,8 +145,9 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put ("AEP.sinks.hbaseSink.channel","memchannelHbase");
     
     //是否自动创建命名空间，在序列化的时候需要用到
-    convertedConfig.put ("AEP.sinks.hbaseSink.serializer.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
-    convertedConfig.put ("AEP.sinks.hbaseSink.serializer.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+    convertedConfig.put ("AEP.sinks.hbaseSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
+    convertedConfig.put ("AEP.sinks.hbaseSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+    convertedConfig.put ("AEP.sinks.hbaseSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
       
   
     convertedConfig.put ("AEP.sinks.redisSink.type","com.ctg.aep.sink.hbase.HBaseSink");
@@ -156,8 +157,9 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put ("AEP.sinks.redisSink.coalesceIncrements","false");
     convertedConfig.put ("AEP.sinks.redisSink.channel","memchannelRedis");
     convertedConfig.put ("AEP.sinks.redisSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
-    convertedConfig.put ("AEP.sinks.redisSink.serializer.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
-    convertedConfig.put ("AEP.sinks.redisSink.serializer.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+    convertedConfig.put ("AEP.sinks.redisSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
+    convertedConfig.put ("AEP.sinks.redisSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+    convertedConfig.put ("AEP.sinks.redisSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
   
   
     if( verbose ){

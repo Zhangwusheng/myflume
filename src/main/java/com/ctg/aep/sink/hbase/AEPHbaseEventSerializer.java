@@ -18,6 +18,7 @@
  */
 package com.ctg.aep.sink.hbase;
 
+import com.ctg.aep.data.AEPDataObject;
 import org.apache.flume.Event;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurableComponent;
@@ -33,13 +34,13 @@ import java.util.List;
  * passed in. The columns should exist in the table and column family
  * specified in the configuration for the HbaseSink.
  */
-public interface HbaseEventSerializer extends Configurable, ConfigurableComponent {
+public interface AEPHbaseEventSerializer extends Configurable, ConfigurableComponent {
   /**
    * Initialize the event serializer.
    * @param event Event to be written to HBase
    * @param columnFamily Column family to write to
    */
-  public void initialize ( Event event, byte[] columnFamily );
+  public void initialize ( AEPDataObject aepDataObject, Event event, byte[] columnFamily );
 
   /**
    * Get the actions that should be written out to hbase as a result of this

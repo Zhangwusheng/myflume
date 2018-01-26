@@ -19,14 +19,12 @@
 
 package com.ctg.aep.sink.hbase;
 
+import com.ctg.aep.data.AEPDataObject;
 import com.google.common.base.Charsets;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.FlumeException;
 import org.apache.flume.conf.ComponentConfiguration;
-import org.apache.flume.conf.ConfigurationException;
-import org.apache.flume.conf.FlumeConfigurationError;
 import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Row;
@@ -50,7 +48,7 @@ import java.util.List;
  * <tt>incColumn:</tt> Which column to increment. Null means no column is
  * incremented.
  */
-public class SimpleHbaseEventSerializer implements HbaseEventSerializer {
+public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
   private String rowPrefix;
   private byte[] incrementRow;
   private byte[] cf;
@@ -59,25 +57,14 @@ public class SimpleHbaseEventSerializer implements HbaseEventSerializer {
   private KeyType keyType;
   private byte[] payload;
   
-  private Boolean autoCreateNamespace;
-  private String uberNamespaceName;
+  
 
-  public SimpleHbaseEventSerializer() {
+  public SimpleAEPHbaseEventSerializer () {
   }
 
   @Override
   public void configure(Context context) {
   
-    autoCreateNamespace = context.getBoolean ( "autoCreateNamespace",false );
-    
-    if( autoCreateNamespace ) {
-      uberNamespaceName = context.getString ( "uberNamespaceName" );
-      if( StringUtils.isEmpty ( uberNamespaceName )){
-        throw new ConfigurationException ( "uberNamespaceName is empty while autoCreateNamespace is set to true" );
-      }
-    }
-    
-    
     rowPrefix = context.getString("rowPrefix", "default");
     incrementRow =
         context.getString("incrementRow", "incRow").getBytes(Charsets.UTF_8);
@@ -107,7 +94,7 @@ public class SimpleHbaseEventSerializer implements HbaseEventSerializer {
   }
 
   @Override
-  public void initialize(Event event, byte[] cf) {
+  public void initialize( AEPDataObject aepDataObject,Event event, byte[] cf) {
     this.payload = event.getBody();
     this.cf = cf;
   }
@@ -128,7 +115,7 @@ public class SimpleHbaseEventSerializer implements HbaseEventSerializer {
           rowKey = SimpleRowKeyGenerator.getUUIDKey(rowPrefix);
         }
         Put put = new Put(rowKey);
-        put.add(cf, plCol, payload);
+        put.addColumn(cf, plCol, payload);
         actions.add(put);
       } catch (Exception e) {
         throw new FlumeException("Could not get row key!", e);

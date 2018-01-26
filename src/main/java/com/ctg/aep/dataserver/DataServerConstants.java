@@ -14,6 +14,8 @@ public class DataServerConstants {
     public static final String COLUMN_FAMILY="hbase.columnFamily";
     public static final String AUTO_CREATE_NS="hbase.autoCreateNamespace";
     public static final String UBER_NAMESPACE="hbase.uberNamespaceName";
+    public static final String UBER_TABLENAME="hbase.uberTableName";
+    
     
     public static final String KAFKA_PREFIX="aep.kafka.";
     public static final String KAFKA_CONSUMER_PREFIX=KAFKA_PREFIX+"consumer.";

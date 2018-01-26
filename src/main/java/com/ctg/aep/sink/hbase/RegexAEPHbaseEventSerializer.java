@@ -18,6 +18,7 @@
  */
 package com.ctg.aep.sink.hbase;
 
+import com.ctg.aep.data.AEPDataObject;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.RandomStringUtils;
@@ -38,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * An {@link HbaseEventSerializer} which parses columns based on a supplied
+ * An {@link AEPHbaseEventSerializer} which parses columns based on a supplied
  * regular expression and column name list.
  * <p>
  * Note that if the regular expression does not return the correct number of
@@ -50,7 +51,7 @@ import java.util.regex.Pattern;
  * <p>
  * See static constant variables for configuration options.
  */
-public class RegexHbaseEventSerializer implements HbaseEventSerializer {
+public class RegexAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
   // Config vars
   /** Regular expression used to parse groups from event data. */
   public static final String REGEX_CONFIG = "regex";
@@ -131,7 +132,7 @@ public class RegexHbaseEventSerializer implements HbaseEventSerializer {
   }
 
   @Override
-  public void initialize(Event event, byte[] columnFamily) {
+  public void initialize( AEPDataObject aepDataObject, Event event, byte[] columnFamily) {
     this.headers = event.getHeaders();
     this.payload = event.getBody();
     this.cf = columnFamily;

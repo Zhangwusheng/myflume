@@ -73,5 +73,9 @@ public class HBaseSinkConfigurationConstants {
   public static final int DEFAULT_MAX_CONSECUTIVE_FAILS = 10;
 
   public static final String CONFIG_MAX_CONSECUTIVE_FAILS = "maxConsecutiveFails";
+  
+  public static final String AUTO_CREATE_NAMESPACE="autoCreateNamespace";
+  public static final String UBER_NAMESPACE_NAME="uberNamespaceName";
+  public static final String UBER_TABLE_NAME="uberTableName";
 
 }
