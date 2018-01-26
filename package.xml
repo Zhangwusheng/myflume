@@ -1,0 +1,90 @@
+<assembly>
+    <id>bin</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>true</useProjectArtifact>
+            <outputDirectory>libs</outputDirectory>
+            <scope>runtime</scope>
+        </dependencySet>
+    </dependencySets>
+
+    <files>
+        <file>
+            <source>${project.basedir}/pom.xml</source>
+            <outputDirectory>sources</outputDirectory>
+        </file>
+        <file>
+            <source>${project.basedir}/package.xml</source>
+            <outputDirectory>sources</outputDirectory>
+        </file>
+        <!--<file>-->
+        <!--<source>${project.basedir}/src/main/bin/cdc.sh</source>-->
+        <!--<outputDirectory>bin</outputDirectory>-->
+        <!--<fileMode>755</fileMode>-->
+        <!--</file>-->
+    </files>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}/src</directory>
+            <outputDirectory>sources/src</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/src/main/proto</directory>
+            <outputDirectory>sources/proto</outputDirectory>
+            <includes>
+                <include>*.proto</include>
+            </includes>
+        </fileSet>
+        <!--<fileSet>  -->
+        <!--<directory>${project.basedir}/src/main/resources</directory>  -->
+        <!--<outputDirectory>conf</outputDirectory>  -->
+        <!--<includes>  -->
+        <!--<include>*.xml</include>  -->
+        <!--<include>*.properties</include>  -->
+        <!--</includes>  -->
+        <!--</fileSet>-->
+
+        <fileSet>
+            <directory>${project.basedir}/conf</directory>
+            <outputDirectory>conf</outputDirectory>
+            <includes>
+                <include>*.xml</include>
+                <include>*.properties</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>${project.basedir}/src/main/resources</directory>
+            <outputDirectory>doc</outputDirectory>
+            <includes>
+                <include>*.txt</include>
+                <include>*.md</include>
+            </includes>
+        </fileSet>
+
+        <!--<fileSet>-->
+        <!--<directory>${project.basedir}/bin</directory>-->
+        <!--<outputDirectory>bin</outputDirectory>-->
+        <!--</fileSet>-->
+
+        <fileSet>
+            <directory>${project.basedir}/src/main/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>755</fileMode>
+        </fileSet>
+
+        <!--<fileSet>  -->
+        <!--<directory>${project.build.directory}</directory>  -->
+        <!--<outputDirectory>/</outputDirectory>  -->
+        <!--<includes>  -->
+        <!--<include>*.jar</include>  -->
+        <!--</includes>  -->
+        <!--</fileSet>  -->
+    </fileSets>
+
+</assembly>  

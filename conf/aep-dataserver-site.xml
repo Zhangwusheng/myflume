@@ -1,0 +1,61 @@
+<configuration>
+
+    <property>
+        <name>kafka.topics.regex</name>
+        <value></value>
+        <description>keep it empty</description>
+    </property>
+
+    <property>
+        <name>kafka.topics</name>
+        <value>aep_topics</value>
+        <description>commaSeparatedTopics,use it</description>
+    </property>
+
+    <property>
+        <name>batchSize</name>
+        <value>100</value>
+        <description>default 1000</description>
+    </property>
+
+    <property>
+        <name>batchDurationMillis</name>
+        <value>100</value>
+        <description>default 1000</description>
+    </property>
+
+    <property>
+        <name>useEventAvroFormat</name>
+        <value>true</value>
+        <description>default false</description>
+    </property>
+
+    <!-- CHANGE ME TO NON EMPTY!!  -->
+    <property>
+        <name>kafka.bootstrap.servers</name>
+        <value></value>
+        <description>non empty</description>
+    </property>
+
+
+    <property>
+        <name>kafka.consumer.group.id</name>
+        <value>aep-kafka</value>
+        <description>default: aep-kafka</description>
+    </property>
+
+
+    <property>
+        <name>kafka.consumer.receive.buffer.bytes</name>
+        <value>4096</value>
+        <description>default:-1</description>
+    </property>
+
+    <property>
+        <name>kafka.consumer.send.buffer.bytes</name>
+        <value>4096</value>
+        <description>default:-1</description>
+    </property>
+
+
+</configuration>
