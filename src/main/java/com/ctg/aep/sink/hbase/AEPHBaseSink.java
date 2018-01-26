@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.flume.*;
 import org.apache.flume.annotations.InterfaceAudience;
 import org.apache.flume.auth.FlumeAuthenticationUtil;
@@ -40,8 +41,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
-//import org.apache.hadoop.hbase.client.HTable;
-//import org.apache.htrace.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.hadoop.hbase.util.Pair;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -84,6 +83,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private PrivilegedExecutor privilegedExecutor;
   
   private Admin hbaseAdmin;
+  private Connection connection;
   private ObjectMapper objectMapper;
   private String uberNamespace;
   private String uberTableName;
@@ -218,7 +218,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     objectMapper =  getDefaultObjectMapper();
     
     try {
-      Connection connection = ConnectionFactory.createConnection(this.config);
+      connection = ConnectionFactory.createConnection(this.config);
       hbaseAdmin =connection.getAdmin ();
     }
     catch ( IOException e ) {
@@ -358,6 +358,8 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
    * @param event
    * @return
    */
+  
+  
   private Pair<String,String> getNamespaceAndTableName(Event event){
   
     getAEPDataObject(event);
@@ -369,6 +371,9 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       return new Pair<> ( uberNamespace, uberTableName );
     }
   }
+  
+  private Map<TableName,List<Row>> myHbaseAction = new HashedMap (  );
+  private Map<TableName,HTable> myHbaseTables = new HashedMap (  );
   
   private Boolean createNamespaceOrTableIfNecessary(Pair<String,String> tableInfo) throws IOException{
     String namespace = tableInfo.getFirst ();
@@ -394,14 +399,18 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       hTableDescriptor.addFamily(hcd);
   
       hbaseAdmin.createTable ( hTableDescriptor );
+      
+      connection.getTable ( tableName );
     }
     
     return true;
   }
   
+  private Pair<String,String> namespaceNameAndTblName;
+  
   private void createNamespaceOrTableIfNecessary(Event event) throws Exception{
   
-    final Pair<String,String> namespaceNameAndTblName = getNamespaceAndTableName(event);
+    namespaceNameAndTblName = getNamespaceAndTableName(event);
     
     final String namespace = namespaceNameAndTblName.getFirst ();
     
@@ -455,18 +464,33 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
         } else {
           
           createNamespaceOrTableIfNecessary(event);
-          
+          TableName tableName = TableName.valueOf ( namespaceNameAndTblName.getFirst (),
+                  namespaceNameAndTblName.getSecond ()) ;
+  
           serializer.initialize(aepDataObject, event, columnFamily);
-          actions.addAll(serializer.getActions());
-          incs.addAll(serializer.getIncrements());
+          
+          if( myHbaseAction.containsKey (tableName )){
+            myHbaseAction.get ( tableName ).addAll ( serializer.getActions() );
+          }else{
+            List<Row> rows = new LinkedList<Row>();
+            rows.addAll ( serializer.getActions() );
+            myHbaseAction.put ( tableName, rows);
+          }
+          
+          
+         
+//          actions.addAll(serializer.getActions());
+          //默认值非空，会返回这些列。这里我觉得不需要，所以就取消了
+//          incs.addAll(serializer.getIncrements());
         }
       }
       if (i == batchSize) {
         sinkCounter.incrementBatchCompleteCount();
       }
       sinkCounter.addToEventDrainAttemptCount(i);
-      
-      putEventsAndCommit(actions, incs, txn);
+  
+      putEventsAndCommit2(txn);
+//      putEventsAndCommit(actions, incs, txn);
       
     } catch (Throwable e) {
       try {
@@ -491,6 +515,71 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       txn.close();
     }
     return status;
+  }
+  
+  private void putEventsAndCommit2(Transaction txn) throws Exception {
+    
+    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
+      @Override
+      public Void run() throws Exception {
+  
+        for ( Map.Entry< TableName, List< Row > > tableNameListEntry : myHbaseAction.entrySet ( ) ) {
+          TableName tableName = tableNameListEntry.getKey ();
+
+          Table hTable = connection.getTable ( tableName );
+          List<Row> rowList = tableNameListEntry.getValue ();
+  
+          for (Row r : rowList) {
+            if (r instanceof Put) {
+              ((Put) r).setWriteToWAL(enableWal);
+            }
+            // Newer versions of HBase - Increment implements Row.
+            if (r instanceof Increment) {
+              ((Increment) r).setWriteToWAL(enableWal);
+            }
+          }
+          hTable.batch ( rowList );
+        }
+        
+        return null;
+      }
+    });
+    
+//    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
+//      @Override
+//      public Void run() throws Exception {
+//
+//        List<Increment> processedIncrements;
+//        if (batchIncrements) {
+//          processedIncrements = coalesceIncrements(incs);
+//        } else {
+//          processedIncrements = incs;
+//        }
+//
+//        // Only used for unit testing.
+//        if (debugIncrCallback != null) {
+//          debugIncrCallback.onAfterCoalesce(processedIncrements);
+//        }
+//
+//        for (final Increment i : processedIncrements) {
+//          i.setWriteToWAL(enableWal);
+//          table.increment(i);
+//        }
+//        return null;
+//      }
+//    });
+    
+    txn.commit();
+  
+    int nTotal = 0;
+    for ( Map.Entry< TableName, List< Row > > tableNameListEntry : myHbaseAction.entrySet ( ) ) {
+      
+      List<Row> rowList = tableNameListEntry.getValue ();
+      nTotal += rowList.size ();
+      
+    }
+    
+    sinkCounter.addToEventDrainSuccessCount(nTotal);
   }
   
   private void putEventsAndCommit(final List<Row> actions,
