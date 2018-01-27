@@ -1,5 +1,7 @@
 package com.ctg.aep.data;
 
+import java.util.Arrays;
+
 /**
  * Created by zhangwusheng on 18/1/26.
  */
@@ -15,5 +17,21 @@ public class AEPDataObject {
     public byte[] payload;
     public String tenant;
     public String tableName;
-    
+
+
+    @Override
+    public String toString() {
+        return "AEPDataObject{" +
+                "col1='" + col1 + '\'' +
+                ", col2='" + col2 + '\'' +
+                ", col3='" + col3 + '\'' +
+                ", col4='" + col4 + '\'' +
+                ", col5='" + col5 + '\'' +
+                ", col6='" + col6 + '\'' +
+                ", col7='" + col7 + '\'' +
+                ", payload=" + Arrays.toString(payload) +
+                ", tenant='" + tenant + '\'' +
+                ", tableName='" + tableName + '\'' +
+                '}';
+    }
 }
