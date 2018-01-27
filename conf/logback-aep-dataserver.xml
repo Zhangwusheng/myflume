@@ -5,7 +5,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
           <encoder>
-              <pattern>[%d][%thread][%level][%logger{0}]%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''} - %msg%n</pattern>
+              <pattern>[%d][%thread][%level][%logger{0}:%L]%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''} - %msg%n</pattern>
               <!--<pattern>[%d][%thread][%level][%logger{0}]-%msg%n</pattern>-->
               <charset>UTF-8</charset>
         </encoder>
@@ -15,13 +15,12 @@
               class="ch.qos.logback.core.rolling.RollingFileAppender">
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <FileNamePattern>${LOG_HOME}/cdcload.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <FileNamePattern>${LOG_HOME}/aep-dataserver.%d{yyyy-MM-dd}.log</FileNamePattern>
             <MaxHistory>30</MaxHistory>
         </rollingPolicy>
 
         <encoder>
-            <pattern>[%d][%thread][%level][%logger{0}]-%msg%n
-            </pattern>
+            <pattern>[%d][%thread][%level][%logger{0}:%L]-%msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
 

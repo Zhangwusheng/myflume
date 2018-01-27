@@ -66,6 +66,7 @@ public class LoggerSink extends AbstractSink implements Configurable {
 
   @Override
   public void configure(Context context) {
+    logger.info("LoggerSink Called .....");
     String strMaxBytes = context.getString(MAX_BYTES_DUMP_KEY);
     if (!Strings.isNullOrEmpty(strMaxBytes)) {
       try {
