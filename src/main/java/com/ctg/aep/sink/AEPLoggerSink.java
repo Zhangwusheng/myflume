@@ -31,27 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-/**
- * <p>
- * A {@link org.apache.flume.Sink} implementation that logs all events received at the INFO level
- * to the <tt>org.apache.flume.sink.LoggerSink</tt> logger.
- * </p>
- * <p>
- * <b>WARNING:</b> Logging events can potentially introduce performance
- * degradation.
- * </p>
- * <p>
- * <b>Configuration options</b>
- * </p>
- * <p>
- * <i>This sink has no configuration parameters.</i>
- * </p>
- * <p>
- * <b>Metrics</b>
- * </p>
- * <p>
- * TODO
- * </p>
+/***
+ * 把数据美化打印出来而已，不仅打印数据，还打印Header
  */
 public class AEPLoggerSink extends AbstractSink implements Configurable {
 
