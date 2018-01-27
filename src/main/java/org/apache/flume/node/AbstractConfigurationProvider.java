@@ -379,6 +379,7 @@ public abstract class AbstractConfigurationProvider implements ConfigurationProv
       if (comp != null) {
         SinkConfiguration config = (SinkConfiguration) comp;
         Sink sink = sinkFactory.create(comp.getComponentName(), comp.getType());
+
         try {
           Configurables.configure(sink, config);
           ChannelComponent channelComponent = channelComponentMap.get(config.getChannel());

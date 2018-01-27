@@ -979,6 +979,7 @@ public class FlumeConfiguration {
       if (cnck != null) {
         // it is a source
         String name = cnck.getComponentName();
+
         Context srcConf = sourceContextMap.get(name);
 
         if (srcConf == null) {

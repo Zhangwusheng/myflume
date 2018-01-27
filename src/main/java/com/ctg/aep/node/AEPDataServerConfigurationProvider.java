@@ -105,69 +105,70 @@ public class AEPDataServerConfigurationProvider extends
   }
   
   private void convertAEPPropertiesToFlumeConf(Properties properties){
-    convertedConfig.put ( "AEP.sources","kafkaSource" );
-    convertedConfig.put ("AEP.channels","memchannelHbase");
-    convertedConfig.put ("AEP.sinks","loggerSink");
+
+    convertedConfig.put ( getAgentName()+".sources","kafkaSource" );
+    convertedConfig.put (getAgentName()+".channels","memchannelHbase");
+    convertedConfig.put (getAgentName()+".sinks","loggerSink");
     
     
-    convertedConfig.put ("AEP.sources.kafkaSource.channels","memchannelHbase memchannelRedis");
-    convertedConfig.put ("AEP.sources.kafkaSource.type","org.apache.flume.source.kafka.KafkaSource");
-    convertedConfig.put ("AEP.sources.kafkaSource.kafka.topics",properties.getProperty ( DataServerConstants.AEP_TOPIC_NAME  ));
-    convertedConfig.put ("AEP.sources.kafkaSource.batchSize","1000");
-    convertedConfig.put ("AEP.sources.kafkaSource.batchDurationMillis","1000");
-    convertedConfig.put ("AEP.sources.kafkaSource.kafka.consumer.group.id",properties.getProperty ( DataServerConstants.AEP_CONSUMER_GROUP  ));
-    convertedConfig.put ("AEP.sources.kafkaSource.kafka.bootstrap.servers",properties.getProperty ( DataServerConstants.AEP_BOOTSTRAP_SERVER ));
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.channels","memchannelHbase memchannelRedis");
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.type","org.apache.flume.source.kafka.KafkaSource");
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.topics",properties.getProperty ( DataServerConstants.AEP_TOPIC_NAME  ));
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.batchSize","1000");
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.batchDurationMillis","1000");
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.consumer.group.id",properties.getProperty ( DataServerConstants.AEP_CONSUMER_GROUP  ));
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.bootstrap.servers",properties.getProperty ( DataServerConstants.AEP_BOOTSTRAP_SERVER ));
   
   
     Map<String, String> map1 = toMap ( properties );
     Map<String, String> map2 = getSubProperties ( DataServerConstants.KAFKA_CONSUMER_PREFIX ,map1);
     for ( String s : map2.keySet ( ) ) {
-      convertedConfig.put( "AEP.sources.kafkaSource.kafka.consumer." +s,map2.get ( s ));
+      convertedConfig.put( getAgentName()+".sources.kafkaSource.kafka.consumer." +s,map2.get ( s ));
     }
   
   
-    convertedConfig.put ("AEP.channels.memchannelHbase.type","org.apache.flume.channel.MemoryChannel");
-    convertedConfig.put ("AEP.channels.memchannelHbase.capacity","100");
-    convertedConfig.put ("AEP.channels.memchannelHbase.transactionCapacity","100");
-    convertedConfig.put ("AEP.channels.memchannelHbase.byteCapacityBufferPercentage","20");
-    convertedConfig.put ("AEP.channels.memchannelHbase.keep-alive","3");
+    convertedConfig.put (getAgentName()+".channels.memchannelHbase.type","org.apache.flume.channel.MemoryChannel");
+    convertedConfig.put (getAgentName()+".channels.memchannelHbase.capacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelHbase.transactionCapacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelHbase.byteCapacityBufferPercentage","20");
+    convertedConfig.put (getAgentName()+".channels.memchannelHbase.keep-alive","3");
 //
-//    convertedConfig.put ("AEP.channels.memchannelRedis.type","org.apache.flume.channel.MemoryChannel");
-//    convertedConfig.put ("AEP.channels.memchannelRedis.capacity","100");
-//    convertedConfig.put ("AEP.channels.memchannelRedis.transactionCapacity","100");
-//    convertedConfig.put ("AEP.channels.memchannelRedis.byteCapacityBufferPercentage","20");
-//    convertedConfig.put ("AEP.channels.memchannelRedis.keep-alive","3");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.type","org.apache.flume.channel.MemoryChannel");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.capacity","100");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.transactionCapacity","100");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.byteCapacityBufferPercentage","20");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
 //
 //
-    convertedConfig.put ("AEP.sinks.loggerSink.maxBytesToLog","1000");
-    convertedConfig.put ("AEP.sinks.loggerSink.type","org.apache.flume.sink.LoggerSink");
-    convertedConfig.put ("AEP.sinks.loggerSink.channel","memchannelHbase");
+    convertedConfig.put (getAgentName()+".sinks.loggerSink.maxBytesToLog","1000");
+    convertedConfig.put (getAgentName()+".sinks.loggerSink.type","com.ctg.aep.sink.AEPLoggerSink");
+    convertedConfig.put (getAgentName()+".sinks.loggerSink.channel","memchannelHbase");
 
 
-//    convertedConfig.put ("AEP.sinks.hbaseSink.type","com.ctg.aep.sink.hbase.AEPHBaseSink");
-//    convertedConfig.put ("AEP.sinks.hbaseSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
-//    convertedConfig.put ("AEP.sinks.hbaseSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
-//    convertedConfig.put ("AEP.sinks.hbaseSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
-//    convertedConfig.put ("AEP.sinks.hbaseSink.enableWal","true");
-//    convertedConfig.put ("AEP.sinks.hbaseSink.coalesceIncrements","false");
-//    convertedConfig.put ("AEP.sinks.hbaseSink.channel","memchannelHbase");
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.type","com.ctg.aep.sink.hbase.AEPHBaseSink");
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.enableWal","true");
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.coalesceIncrements","false");
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.channel","memchannelHbase");
     
     //是否自动创建命名空间，在序列化的时候需要用到
-//    convertedConfig.put ("AEP.sinks.hbaseSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
-//    convertedConfig.put ("AEP.sinks.hbaseSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
-//    convertedConfig.put ("AEP.sinks.hbaseSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
       
 //
-//    convertedConfig.put ("AEP.sinks.redisSink.type","com.ctg.aep.sink.hbase.HBaseSink");
-//    convertedConfig.put ("AEP.sinks.redisSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
-//    convertedConfig.put ("AEP.sinks.redisSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
-//    convertedConfig.put ("AEP.sinks.redisSink.enableWal","true");
-//    convertedConfig.put ("AEP.sinks.redisSink.coalesceIncrements","false");
-//    convertedConfig.put ("AEP.sinks.redisSink.channel","memchannelRedis");
-//    convertedConfig.put ("AEP.sinks.redisSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
-//    convertedConfig.put ("AEP.sinks.redisSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
-//    convertedConfig.put ("AEP.sinks.redisSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
-//    convertedConfig.put ("AEP.sinks.redisSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.type","com.ctg.aep.sink.hbase.HBaseSink");
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.enableWal","true");
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.coalesceIncrements","false");
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.channel","memchannelRedis");
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+//    convertedConfig.put (getAgentName()+".sinks.redisSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
 //
 //
     if( verbose ){
