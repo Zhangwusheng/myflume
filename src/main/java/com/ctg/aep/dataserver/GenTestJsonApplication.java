@@ -12,14 +12,14 @@ import java.text.SimpleDateFormat;
 /**
  * Created by zws on 1/27/18.
  */
-public class TestApplication {
+public class GenTestJsonApplication {
 
-    public TestApplication(){}
+    public GenTestJsonApplication(){}
 
     public  void generateTestString(){
         AEPDataObject aepDataObject = new AEPDataObject();
-        aepDataObject.col1 = "valueOfCol1";
-        aepDataObject.col2 = "valueOfCol2";
+        aepDataObject.deviceId = "valueOfCol1";
+        aepDataObject.timestamp = System.currentTimeMillis();
         aepDataObject.col3 = "valueOfCol3";
         aepDataObject.col4 = "valueOfCol4";
         aepDataObject.col5 = "valueOfCol5";
@@ -66,7 +66,7 @@ public class TestApplication {
 
 
     public static void main(String[] args) {
-        TestApplication testApplication = new TestApplication();
+        GenTestJsonApplication testApplication = new GenTestJsonApplication();
         testApplication.generateTestString();
     }
 }

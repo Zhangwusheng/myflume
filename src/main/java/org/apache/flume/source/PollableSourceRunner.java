@@ -133,9 +133,16 @@ public class PollableSourceRunner extends SourceRunner {
           if (source.process().equals(PollableSource.Status.BACKOFF)) {
             counterGroup.incrementAndGet("runner.backoffs");
 
-            Thread.sleep(Math.min(
-                counterGroup.incrementAndGet("runner.backoffs.consecutive")
-                * source.getBackOffSleepIncrement(), source.getMaxBackOffSleepInterval()));
+            long min1 =counterGroup.incrementAndGet("runner.backoffs.consecutive")
+                    * source.getBackOffSleepIncrement();
+            long min2 =source.getMaxBackOffSleepInterval();
+            long sleepTimeMs =Math.min(min1,min2);
+
+            logger.info("source:{}: Sleep {} ms,min1={},min2={}",source.getName(),sleepTimeMs,min1,min2);
+            Thread.sleep(sleepTimeMs);
+//            Thread.sleep(Math.min(
+//                counterGroup.incrementAndGet("runner.backoffs.consecutive")
+//                * source.getBackOffSleepIncrement(), source.getMaxBackOffSleepInterval()));
           } else {
             counterGroup.set("runner.backoffs.consecutive", 0L);
           }

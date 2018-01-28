@@ -21,6 +21,9 @@ package com.ctg.aep.sink.hbase;
 
 import com.ctg.aep.data.AEPDataObject;
 import com.google.common.base.Charsets;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.Unpooled;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.FlumeException;
@@ -28,9 +31,13 @@ import org.apache.flume.conf.ComponentConfiguration;
 import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Row;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * A simple serializer that returns puts from an event, by writing the event
@@ -49,6 +56,9 @@ import java.util.List;
  * incremented.
  */
 public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
+
+  private Logger logger = LoggerFactory.getLogger(SimpleAEPHbaseEventSerializer.class);
+
   private String rowPrefix;
   private byte[] incrementRow;
   private byte[] cf;
@@ -56,8 +66,10 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
   private byte[] incCol;
   private KeyType keyType;
   private byte[] payload;
-  
-  
+  private AEPDataObject aepDataObject;
+  private ByteBuf byteBuf = Unpooled.buffer(256);
+
+  private Random random = new Random(System.currentTimeMillis());
 
   public SimpleAEPHbaseEventSerializer () {
   }
@@ -97,32 +109,62 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
   public void initialize( AEPDataObject aepDataObject,Event event, byte[] cf) {
     this.payload = event.getBody();
     this.cf = cf;
+    this.aepDataObject = aepDataObject;
   }
 
+
+  private List<Row> getAEPActions() throws FlumeException {
+    List<Row> actions = new LinkedList<Row>();
+
+    if( aepDataObject == null )
+      return  actions;
+
+    byteBuf.clear();
+    byteBuf.writeBytes(aepDataObject.deviceId.getBytes());
+    byteBuf.writeLong(aepDataObject.timestamp);
+    byteBuf.writeInt(random.nextInt());
+
+    String sss = ByteBufUtil.prettyHexDump(byteBuf);
+    logger.info("KEY::::{}----",sss);
+
+    byte[] rowKey = new byte[ byteBuf.readableBytes() ];
+    byteBuf.readBytes(rowKey);
+    Put put = new Put(rowKey);
+    put.addColumn(cf,"col3".getBytes(),aepDataObject.col3.getBytes());
+    put.addColumn(cf,"col4".getBytes(),aepDataObject.col4.getBytes());
+    put.addColumn(cf,"col5".getBytes(),aepDataObject.col5.getBytes());
+
+    actions.add(put);
+
+    return actions;
+  }
   @Override
   public List<Row> getActions() throws FlumeException {
-    List<Row> actions = new LinkedList<Row>();
-    if (plCol != null) {
-      byte[] rowKey;
-      try {
-        if (keyType == KeyType.TS) {
-          rowKey = SimpleRowKeyGenerator.getTimestampKey(rowPrefix);
-        } else if (keyType == KeyType.RANDOM) {
-          rowKey = SimpleRowKeyGenerator.getRandomKey(rowPrefix);
-        } else if (keyType == KeyType.TSNANO) {
-          rowKey = SimpleRowKeyGenerator.getNanoTimestampKey(rowPrefix);
-        } else {
-          rowKey = SimpleRowKeyGenerator.getUUIDKey(rowPrefix);
-        }
-        Put put = new Put(rowKey);
-        put.addColumn(cf, plCol, payload);
-        actions.add(put);
-      } catch (Exception e) {
-        throw new FlumeException("Could not get row key!", e);
-      }
 
-    }
-    return actions;
+    return getAEPActions();
+
+//    List<Row> actions = new LinkedList<Row>();
+//    if (plCol != null) {
+//      byte[] rowKey;
+//      try {
+//        if (keyType == KeyType.TS) {
+//          rowKey = SimpleRowKeyGenerator.getTimestampKey(rowPrefix);
+//        } else if (keyType == KeyType.RANDOM) {
+//          rowKey = SimpleRowKeyGenerator.getRandomKey(rowPrefix);
+//        } else if (keyType == KeyType.TSNANO) {
+//          rowKey = SimpleRowKeyGenerator.getNanoTimestampKey(rowPrefix);
+//        } else {
+//          rowKey = SimpleRowKeyGenerator.getUUIDKey(rowPrefix);
+//        }
+//        Put put = new Put(rowKey);
+//        put.addColumn(cf, plCol, payload);
+//        actions.add(put);
+//      } catch (Exception e) {
+//        throw new FlumeException("Could not get row key!", e);
+//      }
+//
+//    }
+//    return actions;
   }
 
   @Override

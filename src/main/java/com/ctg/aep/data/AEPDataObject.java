@@ -7,8 +7,8 @@ import java.util.Arrays;
  */
 public class AEPDataObject {
     
-    public String col1;
-    public String col2;
+    public String deviceId;
+    public long timestamp;
     public String col3;
     public String col4;
     public String col5;
@@ -22,8 +22,8 @@ public class AEPDataObject {
     @Override
     public String toString() {
         return "AEPDataObject{" +
-                "col1='" + col1 + '\'' +
-                ", col2='" + col2 + '\'' +
+                "deviceId='" + deviceId + '\'' +
+                ", timestamp='" + timestamp + '\'' +
                 ", col3='" + col3 + '\'' +
                 ", col4='" + col4 + '\'' +
                 ", col5='" + col5 + '\'' +

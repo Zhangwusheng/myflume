@@ -108,7 +108,7 @@ public class AEPDataServerConfigurationProvider extends
 
     convertedConfig.put ( getAgentName()+".sources","kafkaSource" );
     convertedConfig.put (getAgentName()+".channels","memchannelHbase");
-    convertedConfig.put (getAgentName()+".sinks","loggerSink");
+    convertedConfig.put (getAgentName()+".sinks","hbaseSink");
     
     
     convertedConfig.put (getAgentName()+".sources.kafkaSource.channels","memchannelHbase memchannelRedis");
@@ -118,7 +118,8 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".sources.kafkaSource.batchDurationMillis","1000");
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.consumer.group.id",properties.getProperty ( DataServerConstants.AEP_CONSUMER_GROUP  ));
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.bootstrap.servers",properties.getProperty ( DataServerConstants.AEP_BOOTSTRAP_SERVER ));
-  
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.maxBackoffSleep",properties.getProperty ( DataServerConstants.KAFKA_MAXBACKOFFSLEEP  ));
+
   
     Map<String, String> map1 = toMap ( properties );
     Map<String, String> map2 = getSubProperties ( DataServerConstants.KAFKA_CONSUMER_PREFIX ,map1);
@@ -140,24 +141,25 @@ public class AEPDataServerConfigurationProvider extends
 //    convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
 //
 //
-    convertedConfig.put (getAgentName()+".sinks.loggerSink.maxBytesToLog","1000");
-    convertedConfig.put (getAgentName()+".sinks.loggerSink.type","com.ctg.aep.sink.AEPLoggerSink");
-    convertedConfig.put (getAgentName()+".sinks.loggerSink.channel","memchannelHbase");
+//    convertedConfig.put (getAgentName()+".sinks.loggerSink.maxBytesToLog","1000");
+//    convertedConfig.put (getAgentName()+".sinks.loggerSink.type","com.ctg.aep.sink.AEPLoggerSink");
+//    convertedConfig.put (getAgentName()+".sinks.loggerSink.channel","memchannelHbase");
 
 
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.type","com.ctg.aep.sink.hbase.AEPHBaseSink");
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.enableWal","true");
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.coalesceIncrements","false");
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.channel","memchannelHbase");
-    
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.type","com.ctg.aep.sink.hbase.AEPHBaseSink");
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.enableWal","true");
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.coalesceIncrements","false");
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.channel","memchannelHbase");
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.serializer","com.ctg.aep.sink.hbase.SimpleAEPHbaseEventSerializer");
+
     //是否自动创建命名空间，在序列化的时候需要用到
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
-//    convertedConfig.put (getAgentName()+".sinks.hbaseSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
-      
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
+    convertedConfig.put (getAgentName()+".sinks.hbaseSink.uberTableName",properties.getProperty (DataServerConstants.UBER_TABLENAME));
+
 //
 //    convertedConfig.put (getAgentName()+".sinks.redisSink.type","com.ctg.aep.sink.hbase.HBaseSink");
 //    convertedConfig.put (getAgentName()+".sinks.redisSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
