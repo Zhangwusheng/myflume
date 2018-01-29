@@ -19,6 +19,7 @@
 package org.apache.flume.instrumentation.http;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -95,7 +96,7 @@ public class HTTPMetricsServer implements MonitorService {
   private class HTTPMetricsHandler extends AbstractHandler {
 
     Type mapType = new TypeToken<Map<String, Map<String, String>>>() {}.getType();
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
     public void handle(String target,
