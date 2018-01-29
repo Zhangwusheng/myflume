@@ -9,6 +9,7 @@ import org.apache.flume.auth.PrivilegedExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.joda.time.LocalDateTime;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -26,6 +27,13 @@ public class HbaseTestApplicaiton {
     private Connection connection;
 
     public static void main(String[] args) throws IOException {
+
+        org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
+        System.out.println( localDateTime.getYear()*100+localDateTime.getMonthOfYear());
+        int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
+        String ss2 = String.format("%d",yyyymm);
+        System.out.println(ss2);
+        System.exit(1);
 
         ByteBuf byteBuf = Unpooled.buffer(256);
         Random random = new Random(System.currentTimeMillis());

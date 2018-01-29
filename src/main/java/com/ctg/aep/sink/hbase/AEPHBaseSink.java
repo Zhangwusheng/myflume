@@ -46,6 +46,7 @@ import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -371,14 +372,15 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private Pair<String,String> getNamespaceAndTableName(Event event){
   
     getAEPDataObject(event);
-    
+
+    org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
+    int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
     if( aepDataObject != null ) {
       String tenant = aepDataObject.getTenantId();
       String effTenant =tenant.replace("-","_");
       String productId = aepDataObject.getProductId();
 
-      String tableName =effTenant+"_"+productId+"_"+"YYYYMM_status";
-//      String
+      String tableName =effTenant+"_"+productId+"_"+String.format("%d",yyyymm)+"_status";
       return new Pair<> ( effTenant, tableName );
     }
     else {
