@@ -190,14 +190,14 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   
   @Override
   public void stop() {
-    try {
-      if (table != null) {
-        table.close();
-      }
-      table = null;
-    } catch (IOException e) {
-      throw new FlumeException("Error closing table.", e);
-    }
+//    try {
+//      if (table != null) {
+//        table.close();
+//      }
+//      table = null;
+//    } catch (IOException e) {
+//      throw new FlumeException("Error closing table.", e);
+//    }
     sinkCounter.incrementConnectionClosedCount();
     sinkCounter.stop();
   }
