@@ -9,13 +9,13 @@ import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 /**
  * Created by zws on 1/28/18.
+ * 单机版测试HBase的基础功能
  */
 public class HbaseTestApplicaiton {
 
