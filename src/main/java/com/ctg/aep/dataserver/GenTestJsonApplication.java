@@ -17,17 +17,18 @@ public class GenTestJsonApplication {
     public GenTestJsonApplication(){}
 
     public  void generateTestString(){
+
+        String payload = "{\"sensor_temperature\": 29.8,\"sensor_humidity\":70.0}";
         AEPDataObject aepDataObject = new AEPDataObject();
-        aepDataObject.deviceId = "valueOfCol1";
-        aepDataObject.timestamp = System.currentTimeMillis();
-        aepDataObject.col3 = "valueOfCol3";
-        aepDataObject.col4 = "valueOfCol4";
-        aepDataObject.col5 = "valueOfCol5";
-        aepDataObject.col6 = "valueOfCol6";
-        aepDataObject.col7 = "valueOfCol7";
-        aepDataObject.payload = "ReaDataPayLoad".getBytes();
-        aepDataObject.tenant = "tenant";
-        aepDataObject.tableName = "testtbl";
+        aepDataObject.setDeviceId("DeviceId");
+        aepDataObject.setTimestamp( System.currentTimeMillis());
+        aepDataObject.setAssocAssetId( "AssocAssetId");
+        aepDataObject.setDeviceType("valueOfCol4");
+        aepDataObject.setMessageType("ad");
+        aepDataObject.setPayload(payload);
+        aepDataObject.setTenantId("TenantId");
+        aepDataObject.setProductId("ProductId");
+
 
         ObjectMapper objectMapper = getDefaultObjectMapper();
         String data;

@@ -31,6 +31,7 @@ import org.apache.flume.conf.ComponentConfiguration;
 import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Row;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,8 +121,8 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
       return  actions;
 
     byteBuf.clear();
-    byteBuf.writeBytes(aepDataObject.deviceId.getBytes());
-    byteBuf.writeLong(aepDataObject.timestamp);
+    byteBuf.writeBytes(aepDataObject.getDeviceId().getBytes());
+    byteBuf.writeLong(aepDataObject.getTimestamp());
     byteBuf.writeInt(random.nextInt());
 
     String sss = ByteBufUtil.prettyHexDump(byteBuf);
@@ -130,9 +131,14 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
     byte[] rowKey = new byte[ byteBuf.readableBytes() ];
     byteBuf.readBytes(rowKey);
     Put put = new Put(rowKey);
-    put.addColumn(cf,"col3".getBytes(),aepDataObject.col3.getBytes());
-    put.addColumn(cf,"col4".getBytes(),aepDataObject.col4.getBytes());
-    put.addColumn(cf,"col5".getBytes(),aepDataObject.col5.getBytes());
+    put.addColumn(cf,Bytes.toBytes("timestamp"), Bytes.toBytes(aepDataObject.getTimestamp()) );
+    put.addColumn(cf,Bytes.toBytes("payload"),Bytes.toBytes(aepDataObject.getPayload()));
+    put.addColumn(cf,Bytes.toBytes("tenantId"),Bytes.toBytes(aepDataObject.getTenantId()));
+    put.addColumn(cf,Bytes.toBytes("productId"),Bytes.toBytes(aepDataObject.getProductId()));
+    put.addColumn(cf,Bytes.toBytes("deviceId"),Bytes.toBytes(aepDataObject.getDeviceId()));
+    put.addColumn(cf,Bytes.toBytes("deviceType"),Bytes.toBytes(aepDataObject.getDeviceType()));
+    put.addColumn(cf,Bytes.toBytes("messageType"),Bytes.toBytes(aepDataObject.getMessageType()));
+    put.addColumn(cf,Bytes.toBytes("assocAssetId"),Bytes.toBytes(aepDataObject.getAssocAssetId()));
 
     actions.add(put);
 
