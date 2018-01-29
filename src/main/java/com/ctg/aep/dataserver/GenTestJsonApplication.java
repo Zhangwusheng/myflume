@@ -8,6 +8,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 /**
  * Created by zws on 1/27/18.
@@ -16,7 +17,7 @@ public class GenTestJsonApplication {
 
     public GenTestJsonApplication(){}
 
-    public  void generateTestString(){
+    public  String generateTestString(){
 
         String payload = "{\"sensor_temperature\": 29.8,\"sensor_humidity\":70.0}";
         AEPDataObject aepDataObject = new AEPDataObject();
@@ -31,7 +32,7 @@ public class GenTestJsonApplication {
 
 
         ObjectMapper objectMapper = getDefaultObjectMapper();
-        String data;
+        String data = null;
         try {
             data = objectMapper.writeValueAsString(aepDataObject);
             System.out.println(data);
@@ -40,10 +41,20 @@ public class GenTestJsonApplication {
             System.out.println(aepDataObject2);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
         }
+
+        return data;
     }
 
+    public void testDecode(String data) throws IOException{
+        ObjectMapper objectMapper = getDefaultObjectMapper();
+        Map<String,Object> result = objectMapper.readValue(data.getBytes(), Map.class);
+
+        for (Map.Entry<String, Object> stringStringEntry : result.entrySet()) {
+            System.out.println(stringStringEntry.getKey()+"="+stringStringEntry.getValue());
+        }
+
+    }
     public ObjectMapper getDefaultObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         //设置将对象转换成JSON字符串时候:包含的属性不能为空或"";
@@ -66,8 +77,10 @@ public class GenTestJsonApplication {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         GenTestJsonApplication testApplication = new GenTestJsonApplication();
-        testApplication.generateTestString();
+        String data = testApplication.generateTestString();
+
+        testApplication.testDecode(data);
     }
 }
