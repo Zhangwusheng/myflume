@@ -21,7 +21,7 @@
         <commons-lang3.version>3.7</commons-lang3.version>
         <!--<commons-lang2.version>2.6</commons-lang2.version>-->
         <!--<jopt-simple.version>5.0.2</jopt-simple.version>-->
-        <!--<fastjson.version>1.2.7</fastjson.version>-->
+        <fastjson.version>1.2.44</fastjson.version>
         <joda-time.version>2.3</joda-time.version>
         <!--<guice.version>3.0</guice.version>-->
         <!--<jackson-annotations.version>2.4.1</jackson-annotations.version>-->
@@ -455,7 +455,11 @@
             <version>${jedis.version}</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
     </dependencies>
 
 
