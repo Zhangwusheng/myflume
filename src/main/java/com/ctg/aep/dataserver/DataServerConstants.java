@@ -26,4 +26,7 @@ public class DataServerConstants {
     public static final String AEP_TOPIC_NAME = KAFKA_PREFIX+"topic";
     public static final String AEP_CONSUMER_GROUP=KAFKA_CONSUMER_PREFIX+"group.id";
     public static final String AEP_BOOTSTRAP_SERVER="aep.kafka.bootstrap.servers";
+
+    public static final String REDIS_HOST = "redis.host";
+    public static final String REDIS_PORT = "redis.port";
 }
