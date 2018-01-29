@@ -73,13 +73,14 @@ public class DataServerApplication {
     private MonitorService monitorServer;
     private String configPropertiesFile;
 
-    public DataServerApplication() {
-        this(new ArrayList<LifecycleAware>(0));
+    public DataServerApplication(String configFile) {
+        this(new ArrayList<LifecycleAware>(0), configFile);
     }
 
-    public DataServerApplication(List<LifecycleAware> components) {
+    public DataServerApplication(List<LifecycleAware> components,String configFile) {
         this.components = components;
         supervisor = new LifecycleSupervisor();
+        configPropertiesFile = configFile;
     }
 
     public static void main(String[] args) {
@@ -136,7 +137,8 @@ public class DataServerApplication {
             DataServerApplication application = null;
 
 
-            File configurationFile = new File(commandLine.getOptionValue('f'));
+            String configPropertiesFile = commandLine.getOptionValue('f');
+            File configurationFile = new File(configPropertiesFile);
 
         /*
          * The following is to ensure that by default the agent will fail on
@@ -150,7 +152,7 @@ public class DataServerApplication {
 
             AEPDataServerConfigurationProvider configurationProvider =
                     new AEPDataServerConfigurationProvider(agentName, configurationFile, verbose);
-            application = new DataServerApplication();
+            application = new DataServerApplication(configPropertiesFile);
             application.handleConfigurationEvent(configurationProvider.getConfiguration());
 
             application.start();
@@ -292,7 +294,6 @@ public class DataServerApplication {
             return;
         }
 
-
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(configPropertiesFile));
@@ -310,6 +311,9 @@ public class DataServerApplication {
                             properties.getProperty(key));
                 }
             }
+
+            monitorServer.configure(context);
+            monitorServer.start();
 
         } catch (IOException ex) {
             logger.error("Unable to load file:" + configPropertiesFile
@@ -340,8 +344,7 @@ public class DataServerApplication {
 //        }
 //      }
 //
-//      monitorServer.configure(context);
-//      monitorServer.start();
+
 //    } catch (Exception e) {
 //      logger.warn("Error starting monitoring. "
 //              + "Monitoring might not be available.", e);

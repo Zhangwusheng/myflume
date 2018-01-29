@@ -9,7 +9,6 @@ public class DataServerConstants {
     public static final String FLUME_HTTP_PORT = "flume.monitoring.port";
 
     //这里和命令行的-n是一致的。也和
-    public static final String FLUME_AGENT_NAME = "AEP";
 
     public static final String KERBEROSKEYTAB="hbase.kerberosKeytab";
     public static final String KERBEROSPRINCIPAL="hbase.kerberosPrincipal";
