@@ -46,6 +46,7 @@ import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +90,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private String uberTableName;
   private Boolean autoCreateNamespace;
   private AEPDataObject aepDataObject;
+//  private org.joda.time.DateTime
   
   private Map<String,NamespaceDescriptor> stringNamespaceDescriptorMap = Maps.newHashMap (  );
   // Internal hooks used for unit testing.
@@ -188,14 +190,14 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   
   @Override
   public void stop() {
-    try {
-      if (table != null) {
-        table.close();
-      }
-      table = null;
-    } catch (IOException e) {
-      throw new FlumeException("Error closing table.", e);
-    }
+//    try {
+//      if (table != null) {
+//        table.close();
+//      }
+//      table = null;
+//    } catch (IOException e) {
+//      throw new FlumeException("Error closing table.", e);
+//    }
     sinkCounter.incrementConnectionClosedCount();
     sinkCounter.stop();
   }
@@ -359,6 +361,9 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   /**
    * 这里在解析json失败后，返回一个已有的NS和TableName(这个NS和TableName是事先创建好的）
    * 这样不会丢失数据（这个建好的表必须符合已有的数据结构，拥有已有的列簇）
+   *
+   * 表名称定义规则：<租户ID>_<产品ID>_<年YYYY月MM>_status
+   * 表字段Key值规则：<终端ID>_<时间戳(到毫秒)>_<4位随机数>
    * @param event
    * @return
    */
@@ -367,9 +372,16 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private Pair<String,String> getNamespaceAndTableName(Event event){
   
     getAEPDataObject(event);
-    
+
+    org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
+    int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
     if( aepDataObject != null ) {
-      return new Pair<> ( aepDataObject.tenant, aepDataObject.tableName );
+      String tenant = aepDataObject.getTenantId();
+      String effTenant =tenant.replace("-","_");
+      String productId = aepDataObject.getProductId();
+
+      String tableName =effTenant+"_"+productId+"_"+String.format("%d",yyyymm)+"_status";
+      return new Pair<> ( effTenant, tableName );
     }
     else {
       return new Pair<> ( uberNamespace, uberTableName );

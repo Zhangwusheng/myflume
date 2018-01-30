@@ -8,6 +8,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 /**
  * Created by zws on 1/27/18.
@@ -16,21 +17,22 @@ public class GenTestJsonApplication {
 
     public GenTestJsonApplication(){}
 
-    public  void generateTestString(){
+    public  String generateTestString(){
+
+        String payload = "{\"sensor_temperature\": 29.8,\"sensor_humidity\":70.0}";
         AEPDataObject aepDataObject = new AEPDataObject();
-        aepDataObject.deviceId = "valueOfCol1";
-        aepDataObject.timestamp = System.currentTimeMillis();
-        aepDataObject.col3 = "valueOfCol3";
-        aepDataObject.col4 = "valueOfCol4";
-        aepDataObject.col5 = "valueOfCol5";
-        aepDataObject.col6 = "valueOfCol6";
-        aepDataObject.col7 = "valueOfCol7";
-        aepDataObject.payload = "ReaDataPayLoad".getBytes();
-        aepDataObject.tenant = "tenant";
-        aepDataObject.tableName = "testtbl";
+        aepDataObject.setDeviceId("DeviceId");
+        aepDataObject.setTimestamp( System.currentTimeMillis());
+        aepDataObject.setAssocAssetId( "AssocAssetId");
+        aepDataObject.setDeviceType("valueOfCol4");
+        aepDataObject.setMessageType("ad");
+        aepDataObject.setPayload(payload);
+        aepDataObject.setTenantId("TenantId");
+        aepDataObject.setProductId("ProductId");
+
 
         ObjectMapper objectMapper = getDefaultObjectMapper();
-        String data;
+        String data = null;
         try {
             data = objectMapper.writeValueAsString(aepDataObject);
             System.out.println(data);
@@ -39,10 +41,20 @@ public class GenTestJsonApplication {
             System.out.println(aepDataObject2);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
         }
+
+        return data;
     }
 
+    public void testDecode(String data) throws IOException{
+        ObjectMapper objectMapper = getDefaultObjectMapper();
+        Map<String,Object> result = objectMapper.readValue(data.getBytes(), Map.class);
+
+        for (Map.Entry<String, Object> stringStringEntry : result.entrySet()) {
+            System.out.println(stringStringEntry.getKey()+"="+stringStringEntry.getValue());
+        }
+
+    }
     public ObjectMapper getDefaultObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         //设置将对象转换成JSON字符串时候:包含的属性不能为空或"";
@@ -65,8 +77,10 @@ public class GenTestJsonApplication {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         GenTestJsonApplication testApplication = new GenTestJsonApplication();
-        testApplication.generateTestString();
+        String data = testApplication.generateTestString();
+
+        testApplication.testDecode(data);
     }
 }

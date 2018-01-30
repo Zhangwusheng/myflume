@@ -4,11 +4,15 @@ import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import org.apache.flume.auth.FlumeAuthenticationUtil;
+import org.apache.flume.auth.PrivilegedExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.joda.time.LocalDateTime;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -21,19 +25,63 @@ public class HbaseTestApplicaiton {
 
     private Admin hbaseAdmin;
     private Connection connection;
+
+    public static void main(String[] args) throws IOException {
+
+        org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
+        System.out.println( localDateTime.getYear()*100+localDateTime.getMonthOfYear());
+        int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
+        String ss2 = String.format("%d",yyyymm);
+        System.out.println(ss2);
+        System.exit(1);
+
+        ByteBuf byteBuf = Unpooled.buffer(256);
+        Random random = new Random(System.currentTimeMillis());
+
+        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
+        byteBuf.writeInt(random.nextInt());
+        String ss = ByteBufUtil.prettyHexDump(byteBuf);
+        System.out.println(ss);
+
+        byteBuf.clear();
+        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
+        byteBuf.writeInt(random.nextInt());
+        ss = ByteBufUtil.prettyHexDump(byteBuf);
+        System.out.println(ss);
+
+        HbaseTestApplicaiton applicaiton = new HbaseTestApplicaiton();
+        applicaiton.testCreateNamespace();
+    }
+
+    public void testCreateNamespaceKerberos() throws Exception {
+
+        String keyTab = "/etc/security/keytabs/odp.app.keytab";
+        String principal = "odp/test1a1.iot.com";
+
+        PrivilegedExecutor privilegedExecutor = FlumeAuthenticationUtil.getAuthenticator(keyTab, principal);
+        privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                testCreateNamespace();
+                return null;
+            }
+        });
+
+    }
+
     public void testCreateNamespace() throws IOException{
+
         Configuration hbaseConfg = HBaseConfiguration.create();
 
-            connection = ConnectionFactory.createConnection(hbaseConfg);
-            hbaseAdmin =connection.getAdmin ();
+        connection = ConnectionFactory.createConnection(hbaseConfg);
+        hbaseAdmin = connection.getAdmin();
 
-            System.out.println("------------");
-            for (NamespaceDescriptor namespaceDescriptor : hbaseAdmin.listNamespaceDescriptors()) {
-                System.out.println(namespaceDescriptor.getName());
-            }
+        System.out.println("1.List Namespace------------");
+        for (NamespaceDescriptor namespaceDescriptor : hbaseAdmin.listNamespaceDescriptors()) {
+            System.out.println(namespaceDescriptor.getName());
+        }
 
-
-
+        System.out.println("2.Create Namespace------------");
         String namespace = "aep_ns2";
         NamespaceDescriptor namespaceDescriptor;
         try {
@@ -46,6 +94,7 @@ public class HbaseTestApplicaiton {
             hbaseAdmin.createNamespace ( namespaceDescriptor );
         }
 
+        System.out.println("3.List Table------------");
         String table = "aep_tbl";
         String columnFamily = "cf";
         TableName tableName = TableName.valueOf ( namespace, table );
@@ -55,7 +104,7 @@ public class HbaseTestApplicaiton {
             htable = connection.getTable ( tableName );
             System.out.println("table exists:"+hTableDescriptor);
         }catch ( TableNotFoundException ex ){
-
+            System.out.println("4.Create Table------------");
             System.out.println("creating table");
             HTableDescriptor hTableDescriptor = new HTableDescriptor(tableName);
 
@@ -66,6 +115,7 @@ public class HbaseTestApplicaiton {
             htable = connection.getTable ( tableName );
         }
 
+        System.out.println("5.Write Table------------");
         String rowKey = "row-";
         Put put = new Put(rowKey.getBytes(Charsets.UTF_8));
         put.addColumn(columnFamily.getBytes(),"deviceId".getBytes(Charsets.UTF_8),"value1".getBytes(Charsets.UTF_8));
@@ -81,47 +131,5 @@ public class HbaseTestApplicaiton {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-    public static void main(String[] args) throws IOException {
-
-        ByteBuf byteBuf = Unpooled.buffer(256);
-        Random random = new Random(System.currentTimeMillis());
-
-        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
-        byteBuf.writeInt(random.nextInt());
-        String ss = ByteBufUtil.prettyHexDump(byteBuf);
-        System.out.println(ss);
-
-        byteBuf.clear();
-        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
-        byteBuf.writeInt(random.nextInt());
-         ss = ByteBufUtil.prettyHexDump(byteBuf);
-        System.out.println(ss);
-
-//         ByteBuffer byteBuffer = ByteBuffer.allocate(100);
-//        byteBuffer.put("deviceid1-timestamp1-".getBytes());
-//        Random random = new Random(System.currentTimeMillis());
-//        byteBuffer.putInt(random.nextInt());
-//        byteBuffer.flip();
-//        byte[] bytes = new byte[byteBuffer.position()];
-//        byteBuffer.get(bytes);
-//        System.out.println(bytes);
-//
-//        ByteBuf byteBuf = Unpooled.buffer();
-//        byteBuf.writeBytes(byteBuffer);
-//        String ss = ByteBufUtil.prettyHexDump(byteBuf);
-//        System.out.println(ss);
-//
-//        byteBuffer.clear();
-//        byteBuffer.put("deviceid2-timestamp2-".getBytes());
-//        byteBuffer.putInt(random.nextInt());
-//        byteBuffer.flip();
-//        bytes = new byte[byteBuffer.position()];
-//        byteBuffer.get(bytes);
-//        System.out.println(bytes);
-
-
-//        HbaseTestApplicaiton applicaiton = new HbaseTestApplicaiton();
-//        applicaiton.testCreateNamespace();
     }
 }

@@ -107,8 +107,8 @@ public class AEPDataServerConfigurationProvider extends
   private void convertAEPPropertiesToFlumeConf(Properties properties){
 
     convertedConfig.put ( getAgentName()+".sources","kafkaSource" );
-    convertedConfig.put (getAgentName()+".channels","memchannelHbase");
-    convertedConfig.put (getAgentName()+".sinks","hbaseSink");
+    convertedConfig.put (getAgentName()+".channels","memchannelHbase memchannelRedis");
+    convertedConfig.put (getAgentName()+".sinks","hbaseSink redisSink");
     
     
     convertedConfig.put (getAgentName()+".sources.kafkaSource.channels","memchannelHbase memchannelRedis");
@@ -133,13 +133,13 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.transactionCapacity","100");
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.byteCapacityBufferPercentage","20");
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.keep-alive","3");
-//
-//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.type","org.apache.flume.channel.MemoryChannel");
-//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.capacity","100");
-//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.transactionCapacity","100");
-//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.byteCapacityBufferPercentage","20");
-//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
-//
+
+    convertedConfig.put (getAgentName()+".channels.memchannelRedis.type","org.apache.flume.channel.MemoryChannel");
+    convertedConfig.put (getAgentName()+".channels.memchannelRedis.capacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelRedis.transactionCapacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelRedis.byteCapacityBufferPercentage","20");
+    convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
+
 //
 //    convertedConfig.put (getAgentName()+".sinks.loggerSink.maxBytesToLog","1000");
 //    convertedConfig.put (getAgentName()+".sinks.loggerSink.type","com.ctg.aep.sink.AEPLoggerSink");
@@ -160,19 +160,12 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.uberTableName",properties.getProperty (DataServerConstants.UBER_TABLENAME));
 
-//
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.type","com.ctg.aep.sink.hbase.HBaseSink");
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.enableWal","true");
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.coalesceIncrements","false");
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.channel","memchannelRedis");
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.columnFamily",properties.getProperty (DataServerConstants.COLUMN_FAMILY));
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.autoCreateNamespace",properties.getProperty (DataServerConstants.AUTO_CREATE_NS));
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.uberNamespaceName",properties.getProperty (DataServerConstants.UBER_NAMESPACE));
-//    convertedConfig.put (getAgentName()+".sinks.redisSink.UBER_TABLENAME",properties.getProperty (DataServerConstants.UBER_TABLENAME));
-//
-//
+
+    convertedConfig.put (getAgentName()+".sinks.redisSink.type","com.ctg.aep.sink.redis.AEPRedisSink");
+    convertedConfig.put (getAgentName()+".sinks.redisSink.host",properties.getProperty ( DataServerConstants.REDIS_HOST  ));
+    convertedConfig.put (getAgentName()+".sinks.redisSink.port",properties.getProperty ( DataServerConstants.REDIS_PORT  ));
+    convertedConfig.put (getAgentName()+".sinks.redisSink.channel","memchannelRedis");
+
     if( verbose ){
       StringBuilder sb = new StringBuilder(1024);
 //      LOGGER.info ( "=================================" );

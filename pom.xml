@@ -21,7 +21,7 @@
         <commons-lang3.version>3.7</commons-lang3.version>
         <!--<commons-lang2.version>2.6</commons-lang2.version>-->
         <!--<jopt-simple.version>5.0.2</jopt-simple.version>-->
-        <!--<fastjson.version>1.2.7</fastjson.version>-->
+        <fastjson.version>1.2.44</fastjson.version>
         <joda-time.version>2.3</joda-time.version>
         <!--<guice.version>3.0</guice.version>-->
         <!--<jackson-annotations.version>2.4.1</jackson-annotations.version>-->
@@ -46,7 +46,10 @@
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
         <metrics.version>3.1.0</metrics.version>
         <!--<jetty.version>9.2.20.v20161216</jetty.version>-->
-        <!--<jedis.version>2.9.0</jedis.version>-->
+
+        <jedis.version>2.9.0</jedis.version>
+        <fastjson.version>1.2.44</fastjson.version>
+        <!--<hadoop.version>2.7.2</hadoop.version>-->
 
         <!--<hbase.version>0.94.2</hbase.version>-->
         <!--<hadoop.version>2.7.2</hadoop.version>-->
@@ -618,7 +621,17 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
+        </dependency>
 
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
     </dependencies>
 
 

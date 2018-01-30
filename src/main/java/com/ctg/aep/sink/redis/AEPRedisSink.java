@@ -34,12 +34,17 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.JedisPool;
+//import redis.clients.jedis.Jedis;
+//import redis.clients.jedis.JedisPool;
+//import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.IOException;
 
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -61,22 +66,10 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
 
   private AEPDataObject aepDataObject;
 
+  JedisPool jedisPool;
 
   public AEPRedisSink() {
-//    this(HBaseConfiguration.create());
   }
-
-//  public AEPRedisSink(Configuration conf) {
-//    this.config = conf;
-//  }
-
-//  @VisibleForTesting
-//  @InterfaceAudience.Private
-//  AEPRedisSink( Configuration conf, DebugIncrementsCallback cb) {
-//    this(conf);
-//
-//  }
-
 
   private ObjectMapper getDefaultObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -102,15 +95,21 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
   @Override
   public void start() {
 
-
-
     super.start();
-//    sinkCounter.incrementConnectionCreatedCount();
+
+    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    jedisPool = new JedisPool(jedisPoolConfig,redisHost,redisPort);
+
+    sinkCounter.incrementConnectionCreatedCount();
     sinkCounter.start();
   }
 
   @Override
   public void stop() {
+
+    if( jedisPool != null ){
+      jedisPool.close();
+    }
 
     sinkCounter.incrementConnectionClosedCount();
     sinkCounter.stop();
@@ -124,28 +123,22 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
 
     objectMapper =  getDefaultObjectMapper();
 
-    redisHost = context.getString("host");
+    redisHost = context.getString(RedisSinkConfigurationConstants.IP_ADDRESS);
     if( redisHost == null ){
       throw new ConfigurationException("host not configed for sink source:"+getName());
     }
-    String redisPortStr = (context.getString("port"));
+
+    String redisPortStr = context.getString(RedisSinkConfigurationConstants.PORT);
     if( redisPortStr == null ){
       throw new ConfigurationException("port not configed for sink source:"+getName());
     }
 
     redisPort = Integer.parseInt(redisPortStr);
-
-
     sinkCounter = new SinkCounter(this.getName());
 
-    batchSize = context.getLong(
-            RedisSinkConfigurationConstants.CONFIG_BATCHSIZE, new Long(100));
-
+    logger.info("redis:host={},port={}",redisHost,redisPort);
   }
 
-//  public Configuration getConfig() {
-//    return config;
-//  }
 
   private void getAEPDataObject(Event event){
     byte[] bodyBytes = event.getBody ();
@@ -168,38 +161,61 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
   }
 
 
+  private void writeDataToRedis(){
+
+    String redisKey = aepDataObject.getProductId();
+    redisKey+="_";
+    redisKey+=aepDataObject.getDeviceId();
+
+    String payload = aepDataObject.getPayload();
+
+    Map<String,Object> result;
+    try {
+      result = objectMapper.readValue(payload.getBytes(), Map.class);
+      for (Map.Entry<String, Object> stringObjectEntry : result.entrySet()) {
+
+      }
+    } catch (IOException e) {
+      logger.info("decode payload failed:"+payload);
+      return;
+    }
+
+
+    try (Jedis jedis = jedisPool.getResource()) {
+      for (Map.Entry<String, Object> stringObjectEntry : result.entrySet()) {
+        String itemKey =redisKey+"_"+stringObjectEntry.getKey();
+        String value = stringObjectEntry.getValue().toString();
+        jedis.set(itemKey,value);
+      }
+    }
+  }
+
   @Override
   public Status process() throws EventDeliveryException {
     Status status = Status.READY;
     Channel channel = getChannel();
     Transaction txn = channel.getTransaction();
-//    List<Row> actions = new LinkedList<Row>();
-//    List<Increment> incs = new LinkedList<Increment>();
+
     try {
       txn.begin();
 
-      long i = 0;
-      for (; i < batchSize; i++) {
-        Event event = channel.take();
-        if (event == null) {
-          if (i == 0) {
-            status = Status.BACKOFF;
-            sinkCounter.incrementBatchEmptyCount();
-          } else {
-            sinkCounter.incrementBatchUnderflowCount();
-          }
-          break;
-        } else {
+      Event event = channel.take();
 
-        }
-      }
-      if (i == batchSize) {
-        sinkCounter.incrementBatchCompleteCount();
-      }
-      sinkCounter.addToEventDrainAttemptCount(i);
+      txn.commit();
 
-      putEventsAndCommit2(txn);
-//      putEventsAndCommit(actions, incs, txn);
+      if( event == null ){
+        return Status.BACKOFF;
+      }
+
+      getAEPDataObject(event);
+
+      if( this.aepDataObject == null ){
+        return Status.READY;
+      }
+
+      writeDataToRedis();
+
+      return Status.READY;
 
     } catch (Throwable e) {
       try {
@@ -225,69 +241,5 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
     }
     return status;
   }
-
-  private void putEventsAndCommit2(Transaction txn) throws Exception {
-
-    logger.info("putEventsAndCommit2 Called...");
-
-
-
-    txn.commit();
-
-
-    int nTotal = 0;
-
-
-    sinkCounter.addToEventDrainSuccessCount(nTotal);
-  }
-
-//  private void putEventsAndCommit(final List<Row> actions,
-//                                  final List<Increment> incs, Transaction txn) throws Exception {
-//
-//    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
-//      @Override
-//      public Void run() throws Exception {
-//        for (Row r : actions) {
-//          if (r instanceof Put) {
-//            ((Put) r).setWriteToWAL(enableWal);
-//          }
-//          // Newer versions of HBase - Increment implements Row.
-//          if (r instanceof Increment) {
-//            ((Increment) r).setWriteToWAL(enableWal);
-//          }
-//        }
-//        table.batch(actions);
-//        return null;
-//      }
-//    });
-//
-//    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
-//      @Override
-//      public Void run() throws Exception {
-//
-//        List<Increment> processedIncrements;
-//        if (batchIncrements) {
-//          processedIncrements = coalesceIncrements(incs);
-//        } else {
-//          processedIncrements = incs;
-//        }
-//
-//        // Only used for unit testing.
-//        if (debugIncrCallback != null) {
-//          debugIncrCallback.onAfterCoalesce(processedIncrements);
-//        }
-//
-//        for (final Increment i : processedIncrements) {
-//          i.setWriteToWAL(enableWal);
-//          table.increment(i);
-//        }
-//        return null;
-//      }
-//    });
-//
-//    txn.commit();
-//    sinkCounter.addToEventDrainSuccessCount(actions.size());
-//  }
-
 
 }
