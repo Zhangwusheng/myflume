@@ -34,16 +34,12 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-//import redis.clients.jedis.Jedis;
-//import redis.clients.jedis.JedisPool;
-//import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.IOException;
-
 import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 
@@ -97,7 +93,7 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
 
     super.start();
 
-    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig ();
     jedisPool = new JedisPool(jedisPoolConfig,redisHost,redisPort);
 
     sinkCounter.incrementConnectionCreatedCount();
