@@ -1,0 +1,128 @@
+select * from prod_inst where part=101 and yyyymmdd=20180125 limit 10;
+  
+  drop table zws_row_main;
+CREATE TABLE `zws_row_main`(
+  prod_inst_id string,
+  `seq` string, 
+  `value` string)
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY ',' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat';  
+  
+  
+  drop table zws_row_stage;
+  CREATE TABLE `zws_row_stage`(
+  tungsten_opcode string,
+  tungsten_seqno int,
+  tungsten_row_id int,
+  tungsten_commit_timestamp int,
+  prod_inst_id string,
+  `seq` string, 
+  `value` string)
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY ',' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat';  
+  
+  
+echo 'id1,seq1-0,value1-0' > /data1/zhangwusheng/zws_row_main.txt
+echo 'id2,seq2-0,value2-0' >> /data1/zhangwusheng/zws_row_main.txt
+echo 'id3,seq3-0,value3-0' >> /data1/zhangwusheng/zws_row_main.txt
+echo 'id4,seq4-0,value4-0' >> /data1/zhangwusheng/zws_row_main.txt
+
+
+#测试：更新id1，id2，删除id3，保留id4，插入id-new1
+echo 'D,58236428,16502,1516878660,id1,seq1-delete,value1-0' > /data1/zhangwusheng/zws_row_stage.txt
+echo 'I,58236428,16502,1516878661,id1,seq1-insert,value1-insert' >> /data1/zhangwusheng/zws_row_stage.txt
+echo 'D,58236429,16503,1516878662,id2,seq2-delete,value1-0' >> /data1/zhangwusheng/zws_row_stage.txt
+echo 'I,58236429,16503,1516878663,id2,seq2-insert,value1-insert' >> /data1/zhangwusheng/zws_row_stage.txt
+echo 'D,58236429,16503,1516878663,id3,seq3-0,value3-0' >> /data1/zhangwusheng/zws_row_stage.txt
+echo 'I,58236430,16504,1516878664,id-new1,seq1-new,value1-new' >> /data1/zhangwusheng/zws_row_stage.txt
+
+hdfs dfs -copyFromLocal   /data1/zhangwusheng/zws_row_main.txt /tmp/zws_row_main.txt 
+hdfs dfs -copyFromLocal   /data1/zhangwusheng/zws_row_stage.txt /tmp/zws_row_stage.txt 
+
+load data inpath '/tmp/zws_row_main.txt' overwrite into table zws_row_main;
+load data inpath '/tmp/zws_row_stage.txt' overwrite into table zws_row_stage;
+
+create table zws_row_merge like zws_row_main;
+
+
+FROM
+ (
+  SELECT
+   *
+  FROM
+   (
+    SELECT
+     'I' AS tungsten_opcode,
+     0 AS tungsten_seqno,
+     0 AS tungsten_row_id,
+     1497609290 AS tungsten_commit_timestamp,
+     sbx.prod_inst_id,
+     sbx.seq,
+     sbx.value
+    FROM
+     zws_row_main sbx
+   
+    UNION ALL
+     SELECT
+      sbx.tungsten_opcode,
+      sbx.tungsten_seqno,
+      sbx.tungsten_row_id,
+      sbx.tungsten_commit_timestamp,
+      sbx.prod_inst_id,
+     sbx.seq,
+     sbx.value
+      
+     FROM
+      zws_row_stage sbx
+   ) map1 DISTRIBUTE BY prod_inst_id SORT BY prod_inst_id,
+   tungsten_seqno,
+   tungsten_row_id
+ ) sorted1 INSERT OVERWRITE TABLE zws_row_merge SELECT
+  TRANSFORM (
+   tungsten_opcode,
+   tungsten_seqno,
+   tungsten_row_id,
+   tungsten_commit_timestamp,
+   prod_inst_id,
+   seq,
+   value
+  ) USING 'perl /home/odp/dbsync/bin/tungsten-reduce -k prod_inst_id   -c tungsten_opcode,tungsten_seqno,tungsten_row_id,tungsten_commit_timestamp,prod_inst_id,seq,value' 
+  AS prod_inst_id string,
+  seq string,
+  value string;
+
+  
+  
+  
+  
+hive> select * from zws_row_main;
+OK
+id1     seq1-0  value1-0
+id2     seq2-0  value2-0
+id3     seq3-0  value3-0
+id4     seq4-0  value4-0
+
+hive> select * from zws_row_stage;
+OK
+D       58236428        16502   1516878660      id1     seq1-delete     value1-0
+I       58236428        16502   1516878661      id1     seq1-insert     value1-insert
+D       58236429        16503   1516878662      id2     seq2-delete     value1-0
+I       58236429        16503   1516878663      id2     seq2-insert     value1-insert
+D       58236429        16503   1516878663      id3     seq3-0  value3-0
+I       58236430        16504   1516878664      id-new1 seq1-new        value1-new
+
+  
+select * from zws_row_merge;
+OK
+id-new1 seq1-new        value1-new
+id1     seq1-insert     value1-insert
+id2     seq2-insert     value1-insert
+id4     seq4-0  value4-0
