@@ -169,6 +169,23 @@
                 </repository>
 
 
+
+                <repository>
+                    <id>releases</id>
+                    <name>Internal Releases</name>
+                    <url>http://132.122.232.248:8081/nexus/content/repositories/releases</url
+
+                    >
+                </repository>
+                <!--<snapshotRepository>-->
+                    <!--<id>snapshots</id>-->
+                    <!--<name>Internal Snapshots</name>-->
+                    <!--<url>http://132.122.232.248:8081/nexus/content/repositories/snapshots</url-->
+
+                    <!--&gt;-->
+                <!--</snapshotRepository>-->
+
+
             </repositories>
 
         </profile>
@@ -257,6 +274,12 @@
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.ctg.itrdc.cache</groupId>
+            <artifactId>ctg-cache-control</artifactId>
+            <version>1.9.3 </version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>

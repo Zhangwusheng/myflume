@@ -9,6 +9,7 @@ import org.apache.flume.auth.PrivilegedExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.joda.time.LocalDateTime;
 
 import java.io.IOException;
@@ -26,14 +27,14 @@ public class HbaseTestApplicaiton {
     private Admin hbaseAdmin;
     private Connection connection;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
         org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
         System.out.println( localDateTime.getYear()*100+localDateTime.getMonthOfYear());
         int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
         String ss2 = String.format("%d",yyyymm);
         System.out.println(ss2);
-        System.exit(1);
+//        System.exit(1);
 
         ByteBuf byteBuf = Unpooled.buffer(256);
         Random random = new Random(System.currentTimeMillis());
@@ -51,6 +52,9 @@ public class HbaseTestApplicaiton {
 
         HbaseTestApplicaiton applicaiton = new HbaseTestApplicaiton();
         applicaiton.testCreateNamespace();
+
+        System.out.println("-------------------------------------");
+        applicaiton.testCreateNamespaceKerberos();
     }
 
     public void testCreateNamespaceKerberos() throws Exception {
@@ -118,6 +122,7 @@ public class HbaseTestApplicaiton {
         System.out.println("5.Write Table------------");
         String rowKey = "row-";
         Put put = new Put(rowKey.getBytes(Charsets.UTF_8));
+        Bytes.getBytes()
         put.addColumn(columnFamily.getBytes(),"deviceId".getBytes(Charsets.UTF_8),"value1".getBytes(Charsets.UTF_8));
         put.addColumn(columnFamily.getBytes(),"col2".getBytes(Charsets.UTF_8),"value21".getBytes(Charsets.UTF_8));
         put.addColumn(columnFamily.getBytes(),"col3".getBytes(Charsets.UTF_8),"value3".getBytes(Charsets.UTF_8));
