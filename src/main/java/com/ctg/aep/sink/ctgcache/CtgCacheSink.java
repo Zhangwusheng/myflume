@@ -21,7 +21,9 @@ package com.ctg.aep.sink.ctgcache;
 import com.ctg.aep.data.AEPDataObject;
 //import com.ctg.aep.sink.redis.RedisSinkConfigurationConstants;
 //import com.ctg.itrdc.cache.common.exception.CacheConfigException;
+import com.ctg.itrdc.cache.common.exception.CacheConfigException;
 import com.ctg.itrdc.cache.core.CacheService;
+import com.ctg.itrdc.cache.structure.CacheResponse;
 import com.google.common.base.Throwables;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -72,6 +74,7 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
   private String user;
   private String passwd;
   private boolean using_hash;
+  private long timeout;
 
   public CtgCacheSink() {
 //    String[] groups = {groupId};
@@ -110,7 +113,13 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
 
   @Override
   public void start() {
-//    cacheService = new CacheService();
+    String[] groups = {groupId};
+    try {
+      cacheService = new CacheService(groups,timeout,user,passwd);
+    } catch (CacheConfigException e) {
+      throw new FlumeException(e);
+    }
+
     JedisPoolConfig jedisPoolConfig = new JedisPoolConfig ();
     jedisPool = new JedisPool(jedisPoolConfig,redisHost,redisPort);
 
@@ -122,11 +131,6 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
 
   @Override
   public void stop() {
-
-//    if( jedisPool != null ){
-//      jedisPool.close();
-//    }
-
     sinkCounter.incrementConnectionClosedCount();
     sinkCounter.stop();
   }
@@ -155,8 +159,8 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     }
 
     using_hash = Boolean.parseBoolean(context.getString(CtgCacheSinkConfigurationConstants.USING_HASH,"false"));
-
-    logger.info("ctgcache:groupId={},user={},passwd={}",groupId,user,passwd);
+    timeout = Long.parseLong(context.getString(CtgCacheSinkConfigurationConstants.TIMEOUT,"3000"));
+    logger.info("ctgcache:groupId={},user={},passwd={},using_hash={}",groupId,user,passwd,using_hash);
   }
 
 
@@ -200,14 +204,16 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
       return;
     }
 
-
-    try (Jedis jedis = jedisPool.getResource()) {
       for (Map.Entry<String, Object> stringObjectEntry : result.entrySet()) {
         String itemKey =redisKey+"_"+stringObjectEntry.getKey();
         String value = stringObjectEntry.getValue().toString();
-        jedis.set(itemKey,value);
+
+        String code = cacheService.set(groupId, itemKey, value);
+        if( !code.equals(CacheResponse.OK_CODE)){
+          logger.error("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
+          throw new FlumeException("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
+        }
       }
-    }
   }
 
   @Override
@@ -261,5 +267,4 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     }
     return status;
   }
-
 }

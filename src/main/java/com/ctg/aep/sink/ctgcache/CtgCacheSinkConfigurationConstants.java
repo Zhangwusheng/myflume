@@ -24,4 +24,5 @@ public class CtgCacheSinkConfigurationConstants {
   public static final String PASSWD = "port";
   public static final String GROUP = "group";
   public static final String USING_HASH = "using_hash";
+  public static final String TIMEOUT = "timeout";
 }
