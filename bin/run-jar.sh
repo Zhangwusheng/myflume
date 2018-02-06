@@ -17,4 +17,4 @@ CLASSPATH="${DIR}/libs/*:/etc/hbase/conf:/etc/hadoop/conf:/etc/hive/conf"
 echo "DIR=${DIR}"
 JAVA_HOME="/opt/jdk1.8.0_20"
 
-java -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.HbaseTestApplicaiton
+java -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.HbaseTestApplicaiton 3000
