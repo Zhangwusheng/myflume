@@ -1,5 +1,8 @@
 package com.ctg.aep.dataserver;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -11,6 +14,7 @@ import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.joda.time.LocalDateTime;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -27,42 +31,28 @@ public class HbaseTestApplicaiton {
     private Admin hbaseAdmin;
     private Connection connection;
 
-    public static void main(String[] args) throws Exception {
+    String keyTab = "/etc/security/keytabs/odp.app.keytab";
+    String principal = "odp/test1a1.iot.com";
 
-        org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
-        System.out.println( localDateTime.getYear()*100+localDateTime.getMonthOfYear());
-        int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
-        String ss2 = String.format("%d",yyyymm);
-        System.out.println(ss2);
-//        System.exit(1);
 
-        ByteBuf byteBuf = Unpooled.buffer(256);
-        Random random = new Random(System.currentTimeMillis());
+    Configuration hbaseConfg =null;
 
-        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
-        byteBuf.writeInt(random.nextInt());
-        String ss = ByteBufUtil.prettyHexDump(byteBuf);
-        System.out.println(ss);
+    public HbaseTestApplicaiton(){
+        hbaseConfg = HBaseConfiguration.create();
+    }
 
-        byteBuf.clear();
-        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
-        byteBuf.writeInt(random.nextInt());
-        ss = ByteBufUtil.prettyHexDump(byteBuf);
-        System.out.println(ss);
+    public void init() throws IOException{
 
-        HbaseTestApplicaiton applicaiton = new HbaseTestApplicaiton();
-        applicaiton.testCreateNamespace();
-
-        System.out.println("-------------------------------------");
-        applicaiton.testCreateNamespaceKerberos();
+        connection = ConnectionFactory.createConnection(hbaseConfg);
+        hbaseAdmin = connection.getAdmin();
     }
 
     public void testCreateNamespaceKerberos() throws Exception {
 
-        String keyTab = "/etc/security/keytabs/odp.app.keytab";
-        String principal = "odp/test1a1.iot.com";
+//        String keyTab = "/etc/security/keytabs/odp.app.keytab";
+//        String principal = "odp/test1a1.iot.com";
 
-        PrivilegedExecutor privilegedExecutor = FlumeAuthenticationUtil.getAuthenticator(keyTab, principal);
+        PrivilegedExecutor privilegedExecutor = FlumeAuthenticationUtil.getAuthenticator(principal,keyTab);
         privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
             @Override
             public Void run() throws Exception {
@@ -73,12 +63,137 @@ public class HbaseTestApplicaiton {
 
     }
 
+    public void testDropNamespaceKerberos() throws Exception {
+
+//        String keyTab = "/etc/security/keytabs/odp.app.keytab";
+//        String principal = "odp/test1a1.iot.com";
+
+        PrivilegedExecutor privilegedExecutor = FlumeAuthenticationUtil.getAuthenticator(principal,keyTab);
+        privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                dropNamespace();
+                return null;
+            }
+        });
+
+    }
+
+    public void dropNamespace() throws IOException{
+
+        System.out.println("1.List Namespace------------");
+        for (NamespaceDescriptor namespaceDescriptor : hbaseAdmin.listNamespaceDescriptors()) {
+            System.out.println(namespaceDescriptor.getName());
+        }
+
+        System.out.println("2.dropping Namespace------------");
+        String namespace = "aep_ns2";
+        NamespaceDescriptor namespaceDescriptor;
+        try {
+            namespaceDescriptor = hbaseAdmin.getNamespaceDescriptor ( namespace );
+            System.out.println("------------");
+            System.out.println( namespaceDescriptor.toString());
+        }catch(NamespaceNotFoundException e){
+            System.out.println("---creating namespace...");
+            namespaceDescriptor = NamespaceDescriptor.create ( namespace ).build ();
+            hbaseAdmin.createNamespace ( namespaceDescriptor );
+        }
+
+        System.out.println("3.List Table------------");
+        String table = "aep_tbl";
+        String columnFamily = "cf";
+        TableName tableName = TableName.valueOf ( namespace, table );
+        Table htable = null;
+        try {
+            HTableDescriptor hTableDescriptor = hbaseAdmin.getTableDescriptor ( tableName );
+            htable = connection.getTable ( tableName );
+            System.out.println("table exists:"+hTableDescriptor);
+        }catch ( TableNotFoundException ex ){
+            System.out.println("4.Create Table------------");
+            System.out.println("creating table");
+            HTableDescriptor hTableDescriptor = new HTableDescriptor(tableName);
+
+            HColumnDescriptor hcd = new HColumnDescriptor(columnFamily);
+            hcd.setBlocksize(16*1024*1024);
+            hTableDescriptor.addFamily(hcd);
+            hbaseAdmin.createTable ( hTableDescriptor );
+            htable = connection.getTable ( tableName );
+        }
+
+        System.out.println("try disable table "+tableName);
+        if( htable != null ) {
+            if( !hbaseAdmin.isTableDisabled(tableName))
+            {
+                hbaseAdmin.disableTable(tableName);
+                System.out.println("disable table "+tableName+" success");
+
+            }else{
+                System.out.println(" table "+tableName+" already disabled");
+            }
+
+            hbaseAdmin.deleteTable(tableName);
+            System.out.println("deleting table "+tableName+" success");
+        }
+
+        System.out.println("deleting namespace "+namespace);
+        hbaseAdmin.deleteNamespace(namespace);
+        System.out.println("namespace dropped:"+namespace);
+
+    }
+
+    public void testWriteKerberos() throws Exception {
+
+//        String keyTab = "/etc/security/keytabs/odp.app.keytab";
+//        String principal = "odp/test1a1.iot.com";
+
+        PrivilegedExecutor privilegedExecutor = FlumeAuthenticationUtil.getAuthenticator(principal,keyTab);
+        privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                testWrite();
+                return null;
+            }
+        });
+
+    }
+
+    public void testWrite() throws IOException{
+
+//        Configuration hbaseConfg = HBaseConfiguration.create();
+//
+//        connection = ConnectionFactory.createConnection(hbaseConfg);
+//        hbaseAdmin = connection.getAdmin();
+
+        String namespace = "aep_ns2";
+        String table = "aep_tbl";
+        String columnFamily = "cf";
+        TableName tableName = TableName.valueOf ( namespace, table );
+        System.out.println("5.Write Table------------");
+        String rowKey = "row-";
+        Put put = new Put(rowKey.getBytes(Charsets.UTF_8));
+//        Bytes.getBytes()
+        put.addColumn(columnFamily.getBytes(),"deviceId".getBytes(Charsets.UTF_8),"value1".getBytes(Charsets.UTF_8));
+        put.addColumn(columnFamily.getBytes(),"col2".getBytes(Charsets.UTF_8),"value21".getBytes(Charsets.UTF_8));
+        put.addColumn(columnFamily.getBytes(),"col3".getBytes(Charsets.UTF_8),"value3".getBytes(Charsets.UTF_8));
+        List<Row> actions= new ArrayList<>();
+        actions.add(put);
+
+        Table htable = null;
+        htable = connection.getTable ( tableName );
+        Object[] results = new Object[actions.size()];
+        try {
+            htable.batch(actions,results);
+            System.out.println("write success");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     public void testCreateNamespace() throws IOException{
 
-        Configuration hbaseConfg = HBaseConfiguration.create();
-
-        connection = ConnectionFactory.createConnection(hbaseConfg);
-        hbaseAdmin = connection.getAdmin();
+//        Configuration hbaseConfg = HBaseConfiguration.create();
+//
+//        connection = ConnectionFactory.createConnection(hbaseConfg);
+//        hbaseAdmin = connection.getAdmin();
 
         System.out.println("1.List Namespace------------");
         for (NamespaceDescriptor namespaceDescriptor : hbaseAdmin.listNamespaceDescriptors()) {
@@ -119,22 +234,62 @@ public class HbaseTestApplicaiton {
             htable = connection.getTable ( tableName );
         }
 
-        System.out.println("5.Write Table------------");
-        String rowKey = "row-";
-        Put put = new Put(rowKey.getBytes(Charsets.UTF_8));
-        Bytes.getBytes()
-        put.addColumn(columnFamily.getBytes(),"deviceId".getBytes(Charsets.UTF_8),"value1".getBytes(Charsets.UTF_8));
-        put.addColumn(columnFamily.getBytes(),"col2".getBytes(Charsets.UTF_8),"value21".getBytes(Charsets.UTF_8));
-        put.addColumn(columnFamily.getBytes(),"col3".getBytes(Charsets.UTF_8),"value3".getBytes(Charsets.UTF_8));
-        List<Row> actions= new ArrayList<>();
-        actions.add(put);
+    }
 
-        Object[] results = new Object[actions.size()];
+    public static void main(String[] args) throws Exception {
+
+        org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
+        System.out.println( localDateTime.getYear()*100+localDateTime.getMonthOfYear());
+        int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
+        String ss2 = String.format("%d",yyyymm);
+//        System.out.println(ss2);
+//        System.exit(1);
+
+        ByteBuf byteBuf = Unpooled.buffer(256);
+        Random random = new Random(System.currentTimeMillis());
+
+        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
+        byteBuf.writeInt(random.nextInt());
+        String ss = ByteBufUtil.prettyHexDump(byteBuf);
+        System.out.println(ss);
+
+        byteBuf.clear();
+        byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
+        byteBuf.writeInt(random.nextInt());
+        ss = ByteBufUtil.prettyHexDump(byteBuf);
+//        System.out.println(ss);
+
+        String CDC_HOME_PROPERTY = "aep.home.dir";
+        String CDCHome = System.getProperty(CDC_HOME_PROPERTY, System.getenv("AEP_HOME"));
+
+
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(lc);
+        lc.reset();
         try {
-            htable.batch(actions,results);
-            System.out.println("write success");
-        } catch (InterruptedException e) {
+            configurator.doConfigure(CDCHome + "/conf/logback-aep-dataserver.xml");
+        } catch (JoranException e) {
             e.printStackTrace();
+            System.exit(1);
+        }
+
+        HbaseTestApplicaiton applicaiton = new HbaseTestApplicaiton();
+        applicaiton.init();
+//        applicaiton.testCreateNamespace();
+
+        int TOTAL = Integer.parseInt(args[0]);
+
+        for(int i=0;i<TOTAL;i++) {
+            System.out.println("Cycle=============="+i);
+            System.out.println("-------------------------------------");
+            applicaiton.testDropNamespaceKerberos();
+
+            System.out.println("===================================");
+            applicaiton.testCreateNamespaceKerberos();
+
+            System.out.println("++++++++++++++++++++++++");
+            applicaiton.testWriteKerberos();
         }
     }
 }
