@@ -197,7 +197,7 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
 
       Event event = channel.take();
 
-      txn.commit();
+
 
       if( event == null ){
         return Status.BACKOFF;
@@ -211,6 +211,7 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
 
       writeDataToRedis();
 
+      txn.commit();
       return Status.READY;
 
     } catch (Throwable e) {
@@ -237,5 +238,4 @@ public class AEPRedisSink extends AbstractSink implements Configurable {
     }
     return status;
   }
-
 }

@@ -19,8 +19,6 @@
 package com.ctg.aep.sink.ctgcache;
 
 import com.ctg.aep.data.AEPDataObject;
-//import com.ctg.aep.sink.redis.RedisSinkConfigurationConstants;
-//import com.ctg.itrdc.cache.common.exception.CacheConfigException;
 import com.ctg.itrdc.cache.common.exception.CacheConfigException;
 import com.ctg.itrdc.cache.core.CacheService;
 import com.ctg.itrdc.cache.structure.CacheResponse;
@@ -39,9 +37,6 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -49,25 +44,15 @@ import java.util.Map;
 
 
 /**
- * 新增Redis Sink
+ * 新增CtgCacheSink
  */
 
 public class CtgCacheSink extends AbstractSink implements Configurable {
-
-
   private static final Logger logger = LoggerFactory.getLogger(CtgCacheSink.class);
 
-  private String redisHost;
-  private int redisPort;
-
   private SinkCounter sinkCounter;
-
-  private long batchSize;
   private ObjectMapper objectMapper;
-
   private AEPDataObject aepDataObject;
-
-  JedisPool jedisPool;
 
   private   String groupId ;
   private CacheService cacheService;
@@ -77,17 +62,6 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
   private long timeout;
 
   public CtgCacheSink() {
-//    String[] groups = {groupId};
-//    try
-//    {
-//      CacheService cacheService = new CacheService(groups, 3000,
-//              "userName", "123456");
-//      cacheService.set(groupId, "age", "18");
-//    } catch (CacheConfigException e)
-//    {
-//      e.printStackTrace();
-//    }
-
   }
 
   private ObjectMapper getDefaultObjectMapper() {
@@ -102,11 +76,11 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     //设置将MAP转换为JSON时候只转换值不等于NULL的
     mapper.configure( SerializationConfig.Feature.WRITE_NULL_MAP_VALUES, false);
     mapper.setDateFormat(new SimpleDateFormat ("yyyy-MM-ddHH:mm:ss"));
-//     mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
+    //mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
 
     //设置有属性不能映射成PO时不报错
     mapper.disable( DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
-//     mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,false);  上一条也可以如此设置；
+    //mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,false);  上一条也可以如此设置；
 
     return mapper;
   }
@@ -119,9 +93,6 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     } catch (CacheConfigException e) {
       throw new FlumeException(e);
     }
-
-    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig ();
-    jedisPool = new JedisPool(jedisPoolConfig,redisHost,redisPort);
 
     sinkCounter.incrementConnectionCreatedCount();
     sinkCounter.start();
@@ -139,7 +110,7 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
   @Override
   public void configure(Context context) {
 
-    logger.info ( "---------------com.ctg.aep.sink.hbase.AEPRedisSink.configure called" );
+    logger.info ( "com.ctg.aep.sink.ctgcache.CtgCacheSink.configure called" );
 
     objectMapper =  getDefaultObjectMapper();
 
@@ -161,6 +132,8 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     using_hash = Boolean.parseBoolean(context.getString(CtgCacheSinkConfigurationConstants.USING_HASH,"false"));
     timeout = Long.parseLong(context.getString(CtgCacheSinkConfigurationConstants.TIMEOUT,"3000"));
     logger.info("ctgcache:groupId={},user={},passwd={},using_hash={}",groupId,user,passwd,using_hash);
+
+    sinkCounter = new SinkCounter(this.getName());
   }
 
 
@@ -168,9 +141,11 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     byte[] bodyBytes = event.getBody ();
     String body = new String ( bodyBytes );
 
-    logger.info("Deserialize event.....");
-    ByteBuf byteBuf = Unpooled.copiedBuffer ( bodyBytes );
-    ByteBufUtil.prettyHexDump(byteBuf);
+    if( logger.isDebugEnabled()) {
+      logger.info("Deserialize event.....");
+      ByteBuf byteBuf = Unpooled.copiedBuffer(bodyBytes);
+      ByteBufUtil.prettyHexDump(byteBuf);
+    }
 
     try {
       aepDataObject = objectMapper.readValue (bodyBytes, AEPDataObject.class );
@@ -179,8 +154,6 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     catch ( IOException e ) {
       aepDataObject = null;
       logger.warn ( "Failed to deserialize:{} ",body );
-//      ByteBuf byteBuf = Unpooled.copiedBuffer ( bodyBytes );
-//      ByteBufUtil.prettyHexDump(byteBuf);
     }
   }
 
@@ -193,27 +166,26 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
 
     String payload = aepDataObject.getPayload();
 
+    //解析失败，不影响下一条数据，所以直接返回
     Map<String,Object> result;
     try {
       result = objectMapper.readValue(payload.getBytes(), Map.class);
-      for (Map.Entry<String, Object> stringObjectEntry : result.entrySet()) {
-
-      }
     } catch (IOException e) {
       logger.info("decode payload failed:"+payload);
       return;
     }
 
-      for (Map.Entry<String, Object> stringObjectEntry : result.entrySet()) {
-        String itemKey =redisKey+"_"+stringObjectEntry.getKey();
-        String value = stringObjectEntry.getValue().toString();
+    //CtgCache失败，这里抛出异常
+    for (Map.Entry<String, Object> stringObjectEntry : result.entrySet()) {
+      String itemKey =redisKey+"_"+stringObjectEntry.getKey();
+      String value = stringObjectEntry.getValue().toString();
 
-        String code = cacheService.set(groupId, itemKey, value);
-        if( !code.equals(CacheResponse.OK_CODE)){
-          logger.error("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
-          throw new FlumeException("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
-        }
+      String code = cacheService.set(groupId, itemKey, value);
+      if( !code.equals(CacheResponse.OK_CODE)){
+        logger.error("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
+        throw new FlumeException("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
       }
+    }
   }
 
   @Override
@@ -224,11 +196,7 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
 
     try {
       txn.begin();
-
       Event event = channel.take();
-
-      txn.commit();
-
       if( event == null ){
         return Status.BACKOFF;
       }
@@ -240,7 +208,7 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
       }
 
       writeDataToRedis();
-
+      txn.commit();
       return Status.READY;
 
     } catch (Throwable e) {
