@@ -146,12 +146,6 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.byteCapacityBufferPercentage","20");
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.keep-alive","3");
 
-//
-//    convertedConfig.put (getAgentName()+".sinks.loggerSink.maxBytesToLog","1000");
-//    convertedConfig.put (getAgentName()+".sinks.loggerSink.type","com.ctg.aep.sink.AEPLoggerSink");
-//    convertedConfig.put (getAgentName()+".sinks.loggerSink.channel","memchannelHbase");
-
-
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.type","com.ctg.aep.sink.hbase.AEPHBaseSink");
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
@@ -178,6 +172,7 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.passwd",properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  ));
     convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.user",properties.getProperty ( DataServerConstants.CTGCACHE_USER  ));
     convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.using_hash",properties.getProperty ( DataServerConstants.CTGCACHE_USING_HASH  ));
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.timeout",properties.getProperty ( DataServerConstants.CTGCACHE_TIMEOUT  ));
 
 
     if( verbose ){
