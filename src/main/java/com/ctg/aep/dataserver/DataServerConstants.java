@@ -29,4 +29,10 @@ public class DataServerConstants {
 
     public static final String REDIS_HOST = "redis.host";
     public static final String REDIS_PORT = "redis.port";
+
+    public static final String CTGCACHE_GROUP = "ctgcache.group";
+    public static final String CTGCACHE_TIMEOUT = "ctgcache.timeout";
+    public static final String CTGCACHE_USER = "ctgcache.user";
+    public static final String CTGCACHE_PASSWD = "ctgcache.passwd";
+    public static final String CTGCACHE_USING_HASH = "ctgcache.using_hash";
 }
