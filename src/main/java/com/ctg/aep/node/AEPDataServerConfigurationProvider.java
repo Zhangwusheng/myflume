@@ -107,8 +107,8 @@ public class AEPDataServerConfigurationProvider extends
   private void convertAEPPropertiesToFlumeConf(Properties properties){
 
     convertedConfig.put ( getAgentName()+".sources","kafkaSource" );
-    convertedConfig.put (getAgentName()+".channels","memchannelHbase memchannelRedis");
-    convertedConfig.put (getAgentName()+".sinks","hbaseSink redisSink");
+    convertedConfig.put (getAgentName()+".channels","memchannelHbase memchannelRedis memchannelCtgCache");
+    convertedConfig.put (getAgentName()+".sinks","hbaseSink redisSink ctgcacheSink");
     
     
     convertedConfig.put (getAgentName()+".sources.kafkaSource.channels","memchannelHbase memchannelRedis");
@@ -140,6 +140,12 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".channels.memchannelRedis.byteCapacityBufferPercentage","20");
     convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
 
+    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.type","org.apache.flume.channel.MemoryChannel");
+    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.capacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.transactionCapacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.byteCapacityBufferPercentage","20");
+    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.keep-alive","3");
+
 //
 //    convertedConfig.put (getAgentName()+".sinks.loggerSink.maxBytesToLog","1000");
 //    convertedConfig.put (getAgentName()+".sinks.loggerSink.type","com.ctg.aep.sink.AEPLoggerSink");
@@ -165,6 +171,14 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".sinks.redisSink.host",properties.getProperty ( DataServerConstants.REDIS_HOST  ));
     convertedConfig.put (getAgentName()+".sinks.redisSink.port",properties.getProperty ( DataServerConstants.REDIS_PORT  ));
     convertedConfig.put (getAgentName()+".sinks.redisSink.channel","memchannelRedis");
+
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.channel","memchannelCtgCache");
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.type","com.ctg.aep.sink.ctgcache.CtgCacheSink");
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.group",properties.getProperty ( DataServerConstants.CTGCACHE_GROUP  ));
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.passwd",properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  ));
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.user",properties.getProperty ( DataServerConstants.CTGCACHE_USER  ));
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.using_hash",properties.getProperty ( DataServerConstants.CTGCACHE_USING_HASH  ));
+
 
     if( verbose ){
       StringBuilder sb = new StringBuilder(1024);
