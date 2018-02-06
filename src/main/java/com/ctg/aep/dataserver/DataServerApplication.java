@@ -55,7 +55,7 @@ import java.util.Set;
  * 1.把AEP的额配置转换成Fume的配置
  * 2.在加载数据时，如果没有数据，Flume会等待，这里需要设置好等待时间
  * 3.Flume会批量处理，Hbase用到了这一点。我们的Hbase需要自动创建表名和ns名
- * 4.自己需要编写Redis Sink，使用了CtgCache
+ * 4.自己需要编写Redis Sink和CtgCache
  * 5.Hbase用到了kerberos，需要测试。
  */
 public class DataServerApplication {
@@ -63,9 +63,7 @@ public class DataServerApplication {
     private static final Logger logger = LoggerFactory
             .getLogger(DataServerApplication.class);
 
-    //  public static final String CONF_MONITOR_PREFIX = "flume.monitoring.";
     private static final String CONF_MONITOR_PREFIX = "aep.monitoring.";
-
 
     private final List<LifecycleAware> components;
     private final LifecycleSupervisor supervisor;
@@ -330,25 +328,5 @@ public class DataServerApplication {
                 }
             }
         }
-
-//    Properties systemProps = System.getProperties();
-//    Set<String> keys = systemProps.stringPropertyNames();
-//    try {
-//      Class<? extends MonitorService> klass = MonitoringType.HTTP.getMonitorClass ();
-//      this.monitorServer = klass.newInstance();
-//      Context context = new Context();
-//      for (String key : keys) {
-//        if (key.startsWith(CONF_MONITOR_PREFIX)) {
-//          context.put(key.substring(CONF_MONITOR_PREFIX.length()),
-//                  systemProps.getProperty(key));
-//        }
-//      }
-//
-
-//    } catch (Exception e) {
-//      logger.warn("Error starting monitoring. "
-//              + "Monitoring might not be available.", e);
-//    }
-//
     }
 }
