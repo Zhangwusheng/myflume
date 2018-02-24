@@ -265,7 +265,13 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     
     kerberosKeytab = context.getString( HBaseSinkConfigurationConstants.CONFIG_KEYTAB);
     kerberosPrincipal = context.getString( HBaseSinkConfigurationConstants.CONFIG_PRINCIPAL);
-    
+
+    String hostName = System.getenv("HOSTNAME");
+    if( hostName == null ){
+      throw new FlumeException("Can't getenv HOSTNAME");
+    }
+    kerberosPrincipal = kerberosPrincipal.replaceAll("${HOSTNAME}",hostName);
+
     logger.info ( "kerberosKeytab={}",kerberosKeytab );
     logger.info ( "kerberosPrincipal={}",kerberosPrincipal );
     

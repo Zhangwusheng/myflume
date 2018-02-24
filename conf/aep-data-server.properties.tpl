@@ -12,7 +12,7 @@ kafka.maxBackoffSleep = 22
 hbase.kerberosKeytab=/etc/security/keytabs/odp.user.keytab
 hbase.kerberosPrincipal=odp/${HOSTNAME}@DFS.COM
 #所有的表统一使用这个列簇
-hbase.columnFamily=cf
+hbase.columnFamily=zws
 
 #是否自动创建namespace
 hbase.autoCreateNamespace=true

@@ -19,4 +19,4 @@ export JAVA_HOME="/opt/jdk1.8.0_20"
 export JAVA_HOME="/opt/jdk1.7.0_79"
 
 rm -f ${DIR}/libs/slf4j-log4j12-*.jar
-java -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.HbaseTestApplicaiton 30
+java -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.DataServerApplication

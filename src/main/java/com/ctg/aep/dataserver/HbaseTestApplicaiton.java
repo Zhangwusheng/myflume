@@ -31,9 +31,10 @@ public class HbaseTestApplicaiton {
     private Admin hbaseAdmin;
     private Connection connection;
 
-    String keyTab = "/etc/security/keytabs/odp.app.keytab";
-    String principal = "odp/test1a1.iot.com";
-
+//    String keyTab = "/etc/security/keytabs/odp.app.keytab";
+//    String principal = "odp/test1a1.iot.com";
+    String keyTab = "/etc/security/keytabs/odp.user.keytab";
+    String principal = "odp/danalysis@DFS.COM";
 
     Configuration hbaseConfg =null;
 
