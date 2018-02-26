@@ -12,7 +12,7 @@ done
 BINDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 DIR=`dirname ${BINDIR}`
-CLASSPATH="${DIR}/libs/*:/etc/hbase/conf:/etc/hadoop/conf:/etc/hive/conf"
+CLASSPATH="${DIR}/libs/*:${DIR}/conf:/etc/hbase/conf:/etc/hadoop/conf:/etc/hive/conf"
 
 echo "DIR=${DIR}"
 export JAVA_HOME="/opt/jdk1.8.0_20"
@@ -21,4 +21,4 @@ export JAVA_HOME="/opt/jdk1.7.0_79"
 rm -f ${DIR}/libs/slf4j-log4j12-*.jar
 
 export KAFKA_KERBEROS_CFG=" -Djava.security.auth.login.config=/etc/kafka/conf/kafka_odp_jaas.conf"
-java  ${KAFKA_KERBEROS_CFG} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.DataServerApplication -n aep -f ${DIR}/conf/aep-data-server.properties
+java  ${KAFKA_KERBEROS_CFG} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.CtgCacheTest
