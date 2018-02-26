@@ -12,7 +12,7 @@ done
 BINDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 DIR=`dirname ${BINDIR}`
-CLASSPATH="${DIR}/libs/*:/etc/hbase/conf:/etc/hadoop/conf:/etc/hive/conf"
+CLASSPATH="${DIR}/conf:${DIR}/libs/*:/etc/hbase/conf:/etc/hadoop/conf:/etc/hive/conf"
 
 echo "DIR=${DIR}"
 export JAVA_HOME="/opt/jdk1.8.0_20"
