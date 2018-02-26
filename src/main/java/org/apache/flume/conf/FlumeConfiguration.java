@@ -29,19 +29,7 @@ import org.apache.flume.conf.source.SourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * <p>
@@ -622,8 +610,11 @@ public class FlumeConfiguration {
             ErrorOrWarning.WARNING));
         return new HashSet<String>();
       } else {
+        //为了确保顺序，我改成了TreeSet
         sinkSet =
             new HashSet<String>(Arrays.asList(sinks.split("\\s+")));
+        sinkSet =
+                new TreeSet<String>(Arrays.asList(sinks.split("\\s+")));
       }
       Iterator<String> iter = sinkSet.iterator();
       /*
