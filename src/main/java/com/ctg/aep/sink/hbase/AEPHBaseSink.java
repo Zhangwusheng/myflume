@@ -270,7 +270,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     if( hostName == null ){
       throw new FlumeException("Can't getenv HOSTNAME");
     }
-    kerberosPrincipal = kerberosPrincipal.replaceAll("${HOSTNAME}",hostName);
+    kerberosPrincipal = kerberosPrincipal.replace("${HOSTNAME}",hostName);
 
     logger.info ( "kerberosKeytab={}",kerberosKeytab );
     logger.info ( "kerberosPrincipal={}",kerberosPrincipal );

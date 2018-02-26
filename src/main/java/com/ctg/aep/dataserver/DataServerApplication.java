@@ -84,7 +84,6 @@ public class DataServerApplication {
     public static void main(String[] args) {
 
         try {
-
             Options options = new Options();
 
             Option option = new Option("n", "name", true, "the name of this agent");

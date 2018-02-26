@@ -21,7 +21,7 @@ package com.ctg.aep.sink.ctgcache;
 public class CtgCacheSinkConfigurationConstants {
 
   public static final String USER = "user";
-  public static final String PASSWD = "port";
+  public static final String PASSWD = "passwd";
   public static final String GROUP = "group";
   public static final String USING_HASH = "using_hash";
   public static final String TIMEOUT = "timeout";

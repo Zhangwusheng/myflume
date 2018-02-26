@@ -21,12 +21,19 @@ public class DataServerConstants {
     public static final String KAFKA_PREFIX="kafka.";
     public static final String KAFKA_CONSUMER_PREFIX=KAFKA_PREFIX+"consumer.";
     public static final String KAFKA_MAXBACKOFFSLEEP=KAFKA_PREFIX+"maxBackoffSleep";
+    public static final String KAFKA_SECURITY_PROTOCOL=KAFKA_PREFIX+"security.protocol";
 
 
     public static final String AEP_TOPIC_NAME = KAFKA_PREFIX+"topic";
     public static final String AEP_CONSUMER_GROUP=KAFKA_CONSUMER_PREFIX+"group.id";
     public static final String AEP_BOOTSTRAP_SERVER=KAFKA_PREFIX+"bootstrap.servers";
-
+    public static final String AEP_KAFKA_SECURITY_PROTOCOL=KAFKA_PREFIX+"security.protocol";
+    public static final String AEP_KAFKA_KINIT_CMD=KAFKA_PREFIX+"sasl.kerberos.kinit.cmd";
+    public static final String AEP_KAFKA_KERBEROS_RENEW_WINDOW=KAFKA_PREFIX+"sasl.kerberos.ticket.renew.window.factor";
+    public static final String AEP_KAFKA_KERBEROS_RENEW_JITTER=KAFKA_PREFIX+"sasl.kerberos.ticket.renew.jitter";
+    public static final String AEP_KAFKA_KERBEROS_RELOGIN_TIME=KAFKA_PREFIX+"sasl.kerberos.min.time.before.relogin";
+    public static final String AEP_KAFKA_USE_KERBEROS=KAFKA_PREFIX+"useKerberos";
+    public static final String AEP_KAFKA_JAAS_FILE=KAFKA_PREFIX+"jaasfile";
     public static final String REDIS_HOST = "redis.host";
     public static final String REDIS_PORT = "redis.port";
 
