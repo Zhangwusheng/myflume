@@ -110,7 +110,7 @@ public class AEPDataServerConfigurationProvider extends
 
     convertedConfig.put ( getAgentName()+".sources","kafkaSource" );
     convertedConfig.put (getAgentName()+".channels","memchannelHbase memchannelRedis memchannelCtgCache");
-    convertedConfig.put (getAgentName()+".sinks","hbaseSink ctgcacheSink");
+    convertedConfig.put (getAgentName()+".sinks","ctgcacheSink hbaseSink ");
     
     
     convertedConfig.put (getAgentName()+".sources.kafkaSource.channels","memchannelHbase memchannelRedis");
@@ -121,6 +121,7 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.consumer.group.id",properties.getProperty ( DataServerConstants.AEP_CONSUMER_GROUP  ));
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.bootstrap.servers",properties.getProperty ( DataServerConstants.AEP_BOOTSTRAP_SERVER ));
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.consumer.security.protocol",properties.getProperty ( DataServerConstants.KAFKA_SECURITY_PROTOCOL  ));
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.security.protocol",properties.getProperty ( DataServerConstants.KAFKA_SECURITY_PROTOCOL  ));
 
     Map<String, String> map1 = toMap ( properties );
     Map<String, String> map2 = getSubProperties ( DataServerConstants.KAFKA_CONSUMER_PREFIX ,map1);
@@ -160,6 +161,20 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.byteCapacityBufferPercentage","20");
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.keep-alive","3");
 
+
+
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.channel","memchannelCtgCache");
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.type","com.ctg.aep.sink.ctgcache.CtgCacheSink");
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.group",properties.getProperty ( DataServerConstants.CTGCACHE_GROUP  ));
+    String passwd = properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  );
+    LOGGER.info("passwd from properties:"+passwd);
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.passwd",properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  ));
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.user",properties.getProperty ( DataServerConstants.CTGCACHE_USER  ));
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.using_hash",properties.getProperty ( DataServerConstants.CTGCACHE_USING_HASH  ));
+    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.timeout",properties.getProperty ( DataServerConstants.CTGCACHE_TIMEOUT  ));
+
+
+
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.type","com.ctg.aep.sink.hbase.AEPHBaseSink");
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosKeytab",properties.getProperty ( DataServerConstants.KERBEROSKEYTAB  ));
     convertedConfig.put (getAgentName()+".sinks.hbaseSink.kerberosPrincipal",properties.getProperty ( DataServerConstants.KERBEROSPRINCIPAL  ));
@@ -180,15 +195,6 @@ public class AEPDataServerConfigurationProvider extends
 //    convertedConfig.put (getAgentName()+".sinks.redisSink.port",properties.getProperty ( DataServerConstants.REDIS_PORT  ));
 //    convertedConfig.put (getAgentName()+".sinks.redisSink.channel","memchannelRedis");
 
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.channel","memchannelCtgCache");
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.type","com.ctg.aep.sink.ctgcache.CtgCacheSink");
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.group",properties.getProperty ( DataServerConstants.CTGCACHE_GROUP  ));
-    String passwd = properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  );
-    LOGGER.info("passwd from properties:"+passwd);
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.passwd",properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  ));
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.user",properties.getProperty ( DataServerConstants.CTGCACHE_USER  ));
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.using_hash",properties.getProperty ( DataServerConstants.CTGCACHE_USING_HASH  ));
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.timeout",properties.getProperty ( DataServerConstants.CTGCACHE_TIMEOUT  ));
 
 
     if( verbose ){
