@@ -140,6 +140,8 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     try {
       privilegedExecutor =
               FlumeAuthenticationUtil.getAuthenticator(kerberosPrincipal, kerberosKeytab);
+//      privilegedExecutor =
+//              FlumeAuthenticationUtil.getAuthenticator(null, null);
     } catch (Exception ex) {
       sinkCounter.incrementConnectionFailedCount();
       throw new FlumeException("Failed to login to HBase using "
