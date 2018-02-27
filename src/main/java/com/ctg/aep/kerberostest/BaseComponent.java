@@ -22,12 +22,15 @@ public abstract class BaseComponent implements KerberosComponent {
         sb.append("------ start init " + getName() + "------\n");
         sb.append("---------------------------------------------------------------------------\n");
 
+        System.out.println(sb.toString());
+
         initialize();
 
+        sb.setLength(0);
         sb.append("---------------------------------------------------------------------------\n");
         sb.append("------ finished init " + getName() + "------\n");
         sb.append("---------------------------------------------------------------------------\n");
-
+        System.out.println(sb.toString());
     }
 
     @Override
@@ -36,13 +39,15 @@ public abstract class BaseComponent implements KerberosComponent {
         sb.append("---------------------------------------------------------------------------\n");
         sb.append("------ start work " + getName() + "------\n");
         sb.append("---------------------------------------------------------------------------\n");
+        System.out.println(sb.toString());
 
         doWork();
 
+        sb.setLength(0);
         sb.append("---------------------------------------------------------------------------\n");
         sb.append("------ finished work " + getName() + "------\n");
         sb.append("---------------------------------------------------------------------------\n");
-
+        System.out.println(sb.toString());
     }
 
     protected abstract void initialize() throws Exception;

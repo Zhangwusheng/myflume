@@ -1,5 +1,10 @@
 package com.ctg.aep.kerberostest;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -192,6 +197,21 @@ public class KerberosTests {
     }
 
     public static void main(String[] args) throws Exception{
+
+        String CDC_HOME_PROPERTY = "aep.home.dir";
+        String CDCHome = System.getProperty(CDC_HOME_PROPERTY, System.getenv("AEP_HOME"));
+
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(lc);
+        lc.reset();
+        try {
+            configurator.doConfigure(CDCHome + "/conf/logback-aep-dataserver.xml");
+        } catch (JoranException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
         KerberosTests kerberosTests = new KerberosTests();
         kerberosTests.initComponents();
 
