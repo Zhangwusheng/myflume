@@ -1,17 +1,14 @@
 
 
-package com.ctg.aep.dataserver;
+package com.ctg.aep.kerberostest;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import com.ctg.aep.source.kafka.AEPKafkaSourceConstants;
-import com.google.common.collect.Maps;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.network.LoginType;
-import org.apache.kafka.common.security.authenticator.LoginManager;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;

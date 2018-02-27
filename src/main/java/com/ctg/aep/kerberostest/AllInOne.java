@@ -1,20 +1,17 @@
-package com.ctg.aep.dataserver;
+package com.ctg.aep.kerberostest;
 
 import com.ctg.aep.source.kafka.AEPKafkaSourceConstants;
 import com.ctg.itrdc.cache.common.exception.CacheConfigException;
 import com.ctg.itrdc.cache.core.CacheService;
 import com.google.common.base.Charsets;
-import org.apache.flume.FlumeException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.delegation.web.HttpUserGroupInformation;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
-import javax.swing.text.EditorKit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;

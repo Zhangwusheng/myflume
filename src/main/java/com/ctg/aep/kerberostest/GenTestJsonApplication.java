@@ -1,4 +1,4 @@
-package com.ctg.aep.dataserver;
+package com.ctg.aep.kerberostest;
 
 import com.ctg.aep.data.AEPDataObject;
 import org.codehaus.jackson.map.DeserializationConfig;

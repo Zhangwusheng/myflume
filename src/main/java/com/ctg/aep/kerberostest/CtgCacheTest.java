@@ -1,4 +1,4 @@
-package com.ctg.aep.dataserver;
+package com.ctg.aep.kerberostest;
 
 import com.ctg.itrdc.cache.common.exception.CacheConfigException;
 import com.ctg.itrdc.cache.core.CacheService;

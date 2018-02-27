@@ -1,4 +1,4 @@
-package com.ctg.aep.dataserver;
+package com.ctg.aep.kerberostest;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -6,7 +6,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
-import java.awt.image.ImagingOpException;
 import java.io.IOException;
 
 public class All3Test {

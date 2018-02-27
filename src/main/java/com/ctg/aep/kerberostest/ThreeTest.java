@@ -1,4 +1,4 @@
-package com.ctg.aep.dataserver;
+package com.ctg.aep.kerberostest;
 
 public class ThreeTest {
 
