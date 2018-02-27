@@ -409,6 +409,17 @@ public class AEPKafkaSource extends AbstractPollableSource
       log.info("Group ID was not specified. Using {} as the group id.", groupId);
     }
 
+    useKerberos = context.getBoolean(AEPKafkaSourceConstants.USE_KERBEROS);
+    jaasFile = context.getString(AEPKafkaSourceConstants.JAAS_FILE);
+
+    kinitCommand = context.getString(AEPKafkaSourceConstants.KAFKA_KINIT_CMD);
+    securityProtocol = context.getString(
+            AEPKafkaSourceConstants.SECURITY_PROTOCOL_CONFIG);
+    kerberosReloginTime = context.getLong(AEPKafkaSourceConstants.KAFKA_KERBEROS_RELOGIN_TIME);
+    kerberosRenewJitter = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_JITTER));
+    kerberosRenewWindow = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_WINDOW));
+
+
     setConsumerProps(context);
 
     if (log.isDebugEnabled() && LogPrivacyUtil.allowLogPrintConfig()) {
@@ -419,15 +430,68 @@ public class AEPKafkaSource extends AbstractPollableSource
       counter = new KafkaSourceCounter(getName());
     }
 
-    useKerberos = context.getBoolean(AEPKafkaSourceConstants.USE_KERBEROS);
-    jaasFile = context.getString(AEPKafkaSourceConstants.JAAS_FILE);
 
-    kinitCommand = context.getString(AEPKafkaSourceConstants.KAFKA_KINIT_CMD);
-    securityProtocol = context.getString(
-            AEPKafkaSourceConstants.SECURITY_PROTOCOL_CONFIG);
-    kerberosReloginTime = context.getLong(AEPKafkaSourceConstants.KAFKA_KERBEROS_RELOGIN_TIME);
-    kerberosRenewJitter = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_JITTER));
-    kerberosRenewWindow = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_WINDOW));
+    kerberosConfigs = Maps.newHashMap();
+    kerberosConfigs.put("sasl.kerberos.ticket.renew.window.factor",kerberosRenewWindow);
+    kerberosConfigs.put("sasl.kerberos.ticket.renew.jitter",kerberosRenewJitter);
+    kerberosConfigs.put("sasl.kerberos.min.time.before.relogin",kerberosReloginTime);
+    kerberosConfigs.put("sasl.kerberos.kinit.cmd",kinitCommand);
+
+    System.out.println("---------------------------------");
+    log.info("Starting {}...", this);
+
+    log.info("setting kafka kerberos settings:");
+    String oldConfigFile;
+    if( useKerberos ){
+      log.info("java.security.auth.login.config={}", jaasFile);
+      oldConfigFile = System.setProperty("java.security.auth.login.config",jaasFile);
+      log.info("old config file={}",oldConfigFile);
+    }
+
+    try {
+      log.info("Trying login to kafka");
+      loginManager = LoginManager.acquireLoginManager(
+              LoginType.CLIENT,useKerberos, kerberosConfigs);
+      log.info("Success login to kafka");
+    } catch (IOException e) {
+      log.info("Failed login to kafka");
+      String error = ExceptionUtils.getStackTrace(e);
+      log.error(error);
+      throw  new FlumeException(e);
+    } catch (LoginException e) {
+      log.info("Failed login to kafka");
+      String error = ExceptionUtils.getStackTrace(e);
+      log.error(error);
+      throw  new FlumeException(e);
+    }
+
+    System.out.println(loginManager.serviceName());
+    System.out.println(loginManager.subject().toString());
+    System.out.println("---------------------------------");
+
+
+    // As a migration step check if there are any offsets from the group stored in kafka
+    // If not read them from Zookeeper and commit them to Kafka
+    if (migrateZookeeperOffsets && zookeeperConnect != null && !zookeeperConnect.isEmpty()) {
+      // For simplicity we only support migration of a single topic via the TopicListSubscriber.
+      // There was no way to define a list of topics or a pattern in the previous Flume version.
+      if (subscriber instanceof TopicListSubscriber &&
+              ((TopicListSubscriber) subscriber).get().size() == 1) {
+        String topicStr = ((TopicListSubscriber) subscriber).get().get(0);
+        migrateOffsets(topicStr);
+      } else {
+        log.info("Will not attempt to migrate offsets " +
+                "because multiple topics or a pattern are defined");
+      }
+    }
+
+    //initialize a consumer.
+    consumer = new KafkaConsumer<String, byte[]>(kafkaProps);
+
+    // Subscribe for topics by already specified strategy
+    subscriber.subscribe(consumer, new SourceRebalanceListener(rebalanceFlag));
+
+
   }
 
   // We can remove this once the properties are officially deprecated
@@ -466,11 +530,6 @@ public class AEPKafkaSource extends AbstractPollableSource
                    AEPKafkaSourceConstants.DEFAULT_AUTO_COMMIT);
 
 
-    kerberosConfigs = Maps.newHashMap();
-    kerberosConfigs.put("sasl.kerberos.ticket.renew.window.factor",0.80);
-    kerberosConfigs.put("sasl.kerberos.ticket.renew.jitter",0.05);
-    kerberosConfigs.put("sasl.kerberos.min.time.before.relogin",1 * 60 * 1000L);
-    kerberosConfigs.put("sasl.kerberos.kinit.cmd","/bin/kinit");
     //zws
     kafkaProps.put(AEPKafkaSourceConstants.KINIT_CMD,kinitCommand);
     kafkaProps.put(AEPKafkaSourceConstants.KERBEROS_RELOGIN_TIME,kerberosReloginTime);
@@ -525,57 +584,57 @@ public class AEPKafkaSource extends AbstractPollableSource
 
   @Override
   protected void doStart() throws FlumeException {
-    System.out.println("---------------------------------");
-    log.info("Starting {}...", this);
-
-    log.info("setting kafka kerberos settings:");
-    if( useKerberos ){
-      log.info("java.security.auth.login.config={}", jaasFile);
-      System.setProperty("java.security.auth.login.config",jaasFile);
-    }
-
-    try {
-      log.info("Trying login to kafka");
-      loginManager = LoginManager.acquireLoginManager(
-              LoginType.CLIENT,useKerberos, kerberosConfigs);
-      log.info("Success login to kafka");
-    } catch (IOException e) {
-      log.info("Failed login to kafka");
-      String error = ExceptionUtils.getStackTrace(e);
-      log.error(error);
-      throw  new FlumeException(e);
-    } catch (LoginException e) {
-      log.info("Failed login to kafka");
-      String error = ExceptionUtils.getStackTrace(e);
-      log.error(error);
-      throw  new FlumeException(e);
-    }
-
-    System.out.println(loginManager.serviceName());
-    System.out.println(loginManager.subject().toString());
-    System.out.println("---------------------------------");
-
-
-    // As a migration step check if there are any offsets from the group stored in kafka
-    // If not read them from Zookeeper and commit them to Kafka
-    if (migrateZookeeperOffsets && zookeeperConnect != null && !zookeeperConnect.isEmpty()) {
-      // For simplicity we only support migration of a single topic via the TopicListSubscriber.
-      // There was no way to define a list of topics or a pattern in the previous Flume version.
-      if (subscriber instanceof TopicListSubscriber &&
-          ((TopicListSubscriber) subscriber).get().size() == 1) {
-        String topicStr = ((TopicListSubscriber) subscriber).get().get(0);
-        migrateOffsets(topicStr);
-      } else {
-        log.info("Will not attempt to migrate offsets " +
-            "because multiple topics or a pattern are defined");
-      }
-    }
-
-    //initialize a consumer.
-    consumer = new KafkaConsumer<String, byte[]>(kafkaProps);
-
-    // Subscribe for topics by already specified strategy
-    subscriber.subscribe(consumer, new SourceRebalanceListener(rebalanceFlag));
+//    System.out.println("---------------------------------");
+//    log.info("Starting {}...", this);
+//
+//    log.info("setting kafka kerberos settings:");
+//    if( useKerberos ){
+//      log.info("java.security.auth.login.config={}", jaasFile);
+//      System.setProperty("java.security.auth.login.config",jaasFile);
+//    }
+//
+//    try {
+//      log.info("Trying login to kafka");
+//      loginManager = LoginManager.acquireLoginManager(
+//              LoginType.CLIENT,useKerberos, kerberosConfigs);
+//      log.info("Success login to kafka");
+//    } catch (IOException e) {
+//      log.info("Failed login to kafka");
+//      String error = ExceptionUtils.getStackTrace(e);
+//      log.error(error);
+//      throw  new FlumeException(e);
+//    } catch (LoginException e) {
+//      log.info("Failed login to kafka");
+//      String error = ExceptionUtils.getStackTrace(e);
+//      log.error(error);
+//      throw  new FlumeException(e);
+//    }
+//
+//    System.out.println(loginManager.serviceName());
+//    System.out.println(loginManager.subject().toString());
+//    System.out.println("---------------------------------");
+//
+//
+//    // As a migration step check if there are any offsets from the group stored in kafka
+//    // If not read them from Zookeeper and commit them to Kafka
+//    if (migrateZookeeperOffsets && zookeeperConnect != null && !zookeeperConnect.isEmpty()) {
+//      // For simplicity we only support migration of a single topic via the TopicListSubscriber.
+//      // There was no way to define a list of topics or a pattern in the previous Flume version.
+//      if (subscriber instanceof TopicListSubscriber &&
+//          ((TopicListSubscriber) subscriber).get().size() == 1) {
+//        String topicStr = ((TopicListSubscriber) subscriber).get().get(0);
+//        migrateOffsets(topicStr);
+//      } else {
+//        log.info("Will not attempt to migrate offsets " +
+//            "because multiple topics or a pattern are defined");
+//      }
+//    }
+//
+//    //initialize a consumer.
+//    consumer = new KafkaConsumer<String, byte[]>(kafkaProps);
+//
+//    // Subscribe for topics by already specified strategy
+//    subscriber.subscribe(consumer, new SourceRebalanceListener(rebalanceFlag));
 
     // Connect to kafka. 1 second is optimal time.
     it = consumer.poll(1000).iterator();
