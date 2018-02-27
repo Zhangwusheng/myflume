@@ -17,7 +17,7 @@ public abstract class KafkaComponentBase extends BaseComponent {
     protected abstract void doInit() throws Exception;
 
     @Override
-    public void init() throws Exception {
+    public void initialize() throws Exception {
         doInit();
 
         kafkaProps = new Properties();
@@ -40,7 +40,7 @@ public abstract class KafkaComponentBase extends BaseComponent {
     }
 
     @Override
-    public void work() throws Exception {
+    public void doWork() throws Exception {
         Iterator<ConsumerRecord<String, byte[]>> it;
 
         List<String> topics = new ArrayList<>();

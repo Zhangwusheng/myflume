@@ -10,12 +10,12 @@ public class CtgCacheComponent extends BaseComponent {
     private String[] groups = {groupId};
 
     @Override
-    public void init() {
+    public void initialize() {
         cacheService = new CacheService(groups, timeout, user, passwd);
     }
 
     @Override
-    public void work() {
+    public void doWork() {
 
         System.out.println("*****************CtgCacheComponent.work******************");
 

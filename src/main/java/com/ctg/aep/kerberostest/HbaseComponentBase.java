@@ -26,7 +26,7 @@ public abstract class HbaseComponentBase extends BaseComponent {
     }
 
     @Override
-    public void init() throws Exception {
+    public void initialize() throws Exception {
 
         doInit();
 //        resetJassFileWithCache();
@@ -36,7 +36,7 @@ public abstract class HbaseComponentBase extends BaseComponent {
     }
 
     @Override
-    public void work() throws Exception{
+    public void doWork() throws Exception {
         testHbaseData();
     }
 

@@ -14,4 +14,38 @@ public abstract class BaseComponent implements KerberosComponent {
         System.setProperty(JassKey,fileNameCache);
     }
 
+    @Override
+    public void init() throws Exception {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("---------------------------------------------------------------------------\n");
+        sb.append("------ start init " + getName() + "------\n");
+        sb.append("---------------------------------------------------------------------------\n");
+
+        initialize();
+
+        sb.append("---------------------------------------------------------------------------\n");
+        sb.append("------ finished init " + getName() + "------\n");
+        sb.append("---------------------------------------------------------------------------\n");
+
+    }
+
+    @Override
+    public void work() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("---------------------------------------------------------------------------\n");
+        sb.append("------ start work " + getName() + "------\n");
+        sb.append("---------------------------------------------------------------------------\n");
+
+        doWork();
+
+        sb.append("---------------------------------------------------------------------------\n");
+        sb.append("------ finished work " + getName() + "------\n");
+        sb.append("---------------------------------------------------------------------------\n");
+
+    }
+
+    protected abstract void initialize() throws Exception;
+
+    protected abstract void doWork() throws Exception;
 }
