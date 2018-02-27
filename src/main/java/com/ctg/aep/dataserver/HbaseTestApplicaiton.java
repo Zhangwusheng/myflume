@@ -39,19 +39,16 @@ public class HbaseTestApplicaiton {
     Configuration hbaseConfg =null;
 
     public HbaseTestApplicaiton(){
-        hbaseConfg = HBaseConfiguration.create();
+
     }
 
     public void init() throws IOException{
-
+        hbaseConfg = HBaseConfiguration.create();
         connection = ConnectionFactory.createConnection(hbaseConfg);
         hbaseAdmin = connection.getAdmin();
     }
 
     public void testCreateNamespaceKerberos() throws Exception {
-
-//        String keyTab = "/etc/security/keytabs/odp.app.keytab";
-//        String principal = "odp/test1a1.iot.com";
 
         PrivilegedExecutor privilegedExecutor = FlumeAuthenticationUtil.getAuthenticator(principal,keyTab);
         privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
@@ -65,9 +62,6 @@ public class HbaseTestApplicaiton {
     }
 
     public void testDropNamespaceKerberos() throws Exception {
-
-//        String keyTab = "/etc/security/keytabs/odp.app.keytab";
-//        String principal = "odp/test1a1.iot.com";
 
         PrivilegedExecutor privilegedExecutor = FlumeAuthenticationUtil.getAuthenticator(principal,keyTab);
         privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
@@ -160,11 +154,6 @@ public class HbaseTestApplicaiton {
 
     public void testWrite() throws IOException{
 
-//        Configuration hbaseConfg = HBaseConfiguration.create();
-//
-//        connection = ConnectionFactory.createConnection(hbaseConfg);
-//        hbaseAdmin = connection.getAdmin();
-
         String namespace = "aep_ns2";
         String table = "aep_tbl";
         String columnFamily = "cf";
@@ -172,7 +161,6 @@ public class HbaseTestApplicaiton {
         System.out.println("5.Write Table------------");
         String rowKey = "row-";
         Put put = new Put(rowKey.getBytes(Charsets.UTF_8));
-//        Bytes.getBytes()
         put.addColumn(columnFamily.getBytes(),"deviceId".getBytes(Charsets.UTF_8),"value1".getBytes(Charsets.UTF_8));
         put.addColumn(columnFamily.getBytes(),"col2".getBytes(Charsets.UTF_8),"value21".getBytes(Charsets.UTF_8));
         put.addColumn(columnFamily.getBytes(),"col3".getBytes(Charsets.UTF_8),"value3".getBytes(Charsets.UTF_8));
@@ -190,12 +178,6 @@ public class HbaseTestApplicaiton {
         }
     }
     public void testCreateNamespace() throws IOException{
-
-//        Configuration hbaseConfg = HBaseConfiguration.create();
-//
-//        connection = ConnectionFactory.createConnection(hbaseConfg);
-//        hbaseAdmin = connection.getAdmin();
-
         System.out.println("1.List Namespace------------");
         for (NamespaceDescriptor namespaceDescriptor : hbaseAdmin.listNamespaceDescriptors()) {
             System.out.println(namespaceDescriptor.getName());
@@ -234,6 +216,22 @@ public class HbaseTestApplicaiton {
             hbaseAdmin.createTable ( hTableDescriptor );
             htable = connection.getTable ( tableName );
         }
+    }
+
+    public void test() throws Exception {
+        HbaseTestApplicaiton applicaiton = this;
+
+        for(int i=0;i<10;i++) {
+            System.out.println("Cycle==============" + i);
+            System.out.println("-------------------------------------");
+            applicaiton.testDropNamespaceKerberos();
+
+            System.out.println("===================================");
+            applicaiton.testCreateNamespaceKerberos();
+
+            System.out.println("++++++++++++++++++++++++");
+            applicaiton.testWriteKerberos();
+        }
 
     }
 
@@ -258,7 +256,6 @@ public class HbaseTestApplicaiton {
         byteBuf.writeBytes("deviceid1-timestamp1-".getBytes());
         byteBuf.writeInt(random.nextInt());
         ss = ByteBufUtil.prettyHexDump(byteBuf);
-//        System.out.println(ss);
 
         String CDC_HOME_PROPERTY = "aep.home.dir";
         String CDCHome = System.getProperty(CDC_HOME_PROPERTY, System.getenv("AEP_HOME"));
@@ -277,7 +274,6 @@ public class HbaseTestApplicaiton {
 
         HbaseTestApplicaiton applicaiton = new HbaseTestApplicaiton();
         applicaiton.init();
-//        applicaiton.testCreateNamespace();
 
         int TOTAL = Integer.parseInt(args[0]);
 
