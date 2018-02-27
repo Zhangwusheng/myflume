@@ -150,14 +150,27 @@ public class KerberosTests {
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new CtgCacheComponent());
         compoundComponent.addComponent(new KafkaCacheJaas());
-        compoundComponent.addComponent(new HbaseCacheJassLogin());
+        compoundComponent.addComponent(new HbaseCacheJassNoLogin());
         kerberosComponentMap.put(28,compoundComponent);
 
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new KafkaCacheJaas());
-        compoundComponent.addComponent(new HbaseCacheJassLogin());
+        compoundComponent.addComponent(new HbaseCacheJassNoLogin());
         compoundComponent.addComponent(new CtgCacheComponent());
         kerberosComponentMap.put(29,compoundComponent);
+
+        compoundComponent = new CompoundComponent();
+        compoundComponent.addComponent(new CtgCacheComponent());
+        compoundComponent.addComponent(new KafkaKeyTab());
+        compoundComponent.addComponent(new HbaseKeyTabNoLogin());
+        kerberosComponentMap.put(30, compoundComponent);
+
+
+        compoundComponent = new CompoundComponent();
+        compoundComponent.addComponent(new KafkaKeyTab());
+        compoundComponent.addComponent(new HbaseKeyTabNoLogin());
+        compoundComponent.addComponent(new CtgCacheComponent());
+        kerberosComponentMap.put(31, compoundComponent);
 
     }
 
