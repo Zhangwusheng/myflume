@@ -87,12 +87,7 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
 
   @Override
   public void start() {
-    String[] groups = {groupId};
-    try {
-      cacheService = new CacheService(groups,timeout,user,passwd);
-    } catch (CacheConfigException e) {
-      throw new FlumeException(e);
-    }
+
 
     sinkCounter.incrementConnectionCreatedCount();
     sinkCounter.start();
@@ -134,6 +129,14 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     logger.info("ctgcache:groupId={},user={},passwd={},using_hash={}",groupId,user,passwd,using_hash);
 
     sinkCounter = new SinkCounter(this.getName());
+
+    String[] groups = {groupId};
+    try {
+      cacheService = new CacheService(groups,timeout,user,passwd);
+    } catch (CacheConfigException e) {
+      throw new FlumeException(e);
+    }
+
   }
 
 
