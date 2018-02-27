@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-if [ $# -ne 3 ]
+if [ $# -ne 1 ]
 then
-    echo "usage $0 use_cache use_jaas tasks"
+    echo "usage $0 tasks"
 	exit 1
 fi
 
@@ -48,6 +48,7 @@ else
 fi
 
 
-echo java ${DEBUG_OPT} ${JAAS_ENV} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.AllInOne "$@"
+echo java ${DEBUG_OPT} ${JAAS_ENV} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.kerberostest.AllInOne "$@"
 
-java ${DEBUG_OPT} ${JAAS_ENV} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.AllInOne "$@"
+#java ${DEBUG_OPT} ${JAAS_ENV} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.kerberostest.AllInOne "$@"
+java ${DEBUG_OPT}  -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.kerberostest.KerberosTests "$@"

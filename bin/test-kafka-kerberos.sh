@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
 
-#!/usr/bin/env bash
-
-#!/usr/bin/env bash
-
 SOURCE="${BASH_SOURCE[0]}"
 
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -22,5 +18,5 @@ export JAVA_HOME="/opt/jdk1.8.0_20"
 export JAVA_HOME="/opt/jdk1.7.0_79"
 
 rm -f ${DIR}/libs/slf4j-log4j12-*.jar
-java -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.KafkaTestApplicaiton
+java -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.kerberostest.KafkaTestApplicaiton
 

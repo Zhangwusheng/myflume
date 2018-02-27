@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-#!/usr/bin/env bash
 
 SOURCE="${BASH_SOURCE[0]}"
 
@@ -21,4 +20,4 @@ export JAVA_HOME="/opt/jdk1.7.0_79"
 rm -f ${DIR}/libs/slf4j-log4j12-*.jar
 
 export KAFKA_KERBEROS_CFG=" -Djava.security.auth.login.config=/etc/kafka/conf/kafka_odp_jaas.conf"
-java  ${KAFKA_KERBEROS_CFG} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.CtgCacheTest
+java  ${KAFKA_KERBEROS_CFG} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.kerberostest.CtgCacheTest
