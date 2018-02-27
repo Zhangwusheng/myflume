@@ -608,7 +608,9 @@ public class FlumeConfiguration {
             BasicConfigurationConstants.CONFIG_SINKS,
             FlumeConfigurationErrorType.PROPERTY_VALUE_NULL,
             ErrorOrWarning.WARNING));
-        return new HashSet<String>();
+
+        return new TreeSet<String>();
+//        return new HashSet<String>();
       } else {
         //为了确保顺序，我改成了TreeSet
         sinkSet =
@@ -693,7 +695,10 @@ public class FlumeConfiguration {
 
       }
       sinkContextMap = newContextMap;
-      Set<String> tempSinkset = new HashSet<String>();
+//      Set<String> tempSinkset = new HashSet<String>();
+
+      Set<String> tempSinkset = new TreeSet<String>();
+
       tempSinkset.addAll(sinkConfigMap.keySet());
       tempSinkset.addAll(sinkContextMap.keySet());
       sinkSet.retainAll(tempSinkset);
