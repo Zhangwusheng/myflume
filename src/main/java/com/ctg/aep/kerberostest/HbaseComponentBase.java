@@ -14,15 +14,13 @@ public abstract class HbaseComponentBase extends BaseComponent {
 
     private Admin hbaseAdmin;
     private Connection connection;
-    private String keyTab = "/etc/security/keytabs/odp.user.keytab";
-    private String principal = "odp/danalysis@DFS.COM";
 
     private Configuration hbaseConfg =null;
 
     protected abstract void doInit() throws Exception;
 
     protected void login() throws IOException{
-                UserGroupInformation.loginUserFromKeytab("odp/danalysis@DFS.COM","/etc/security/keytabs/odp.user.keytab");
+        UserGroupInformation.loginUserFromKeytab(getPrincipal(), getKeyTabFileName());
     }
 
     @Override
