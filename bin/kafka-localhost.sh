@@ -53,4 +53,10 @@ hbase-env.sh
 
 
 
+curl -H "Content-Type: application/json;charset=UTF-8" -X POST  -d '{"tenantId":"1","productId":"2","deviceId":"3","datasetId":"4"}
+' "http://14.17.97.70:11000/know_porn?tag=0&uid=0&timestamp=0&nonce=0&signature=0"
+
+
+
+
  {"deviceId":"device1","timestamp":1517138154664,"col3":"valueOfCol3","col4":"valueOfCol4","col5":"valueOfCol5","col6":"valueOfCol6","col7":"valueOfCol7","payload":"UmVhRGF0YVBheUxvYWQ=","tenant":"tenant","tableName":"testtbl"}

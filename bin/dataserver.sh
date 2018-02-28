@@ -23,5 +23,5 @@ rm -f log/aep*log
 DEBUG_OPT=" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=9999,server=y,suspend=y"
 DEBUG_OPT="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=9999"
 
-export KAFKA_KERBEROS_CFG=" -Djava.security.auth.login.config=/etc/kafka/conf/kafka_odp_jaas.conf"
+export KAFKA_KERBEROS_CFG=" -Djava.security.auth.login.config=/etc/kafka/conf/kafka_odp_jaas_cache.conf"
 java ${DEBUG_OPT}  -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.DataServerApplication -n aep -f ${DIR}/conf/aep-data-server.properties
