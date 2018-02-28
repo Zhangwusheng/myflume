@@ -2,12 +2,12 @@ package com.ctg.aep.kerberostest;
 
 public abstract class BaseComponent implements KerberosComponent {
 
-    private String fileNameKeyTab = "/etc/kafka/conf/kafka_odp_jaas_keytab.conf";
-    private String fileNameCache = "/etc/kafka/conf/kafka_odp_jaas_cache.conf";
-    private String JassKey = "java.security.auth.login.config";
+    protected String fileNameKeyTab = "/etc/kafka/conf/kafka_odp_jaas_keytab.conf";
+    protected String fileNameCache = "/etc/kafka/conf/kafka_odp_jaas_cache.conf";
+    protected String JassKey = "java.security.auth.login.config";
 
-    private String principal = "odp/danalysis@DFS.COM";
-    private String keyTab = "/etc/security/keytabs/odp.user.keytab";
+    protected String principal = "odp/danalysis@DFS.COM";
+    protected String keyTab = "/etc/security/keytabs/odp.user.keytab";
 
     protected void resetJassFileWithKeyTab(){
         System.setProperty(JassKey,fileNameKeyTab);

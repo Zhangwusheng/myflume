@@ -109,11 +109,11 @@ public class AEPDataServerConfigurationProvider extends
   private void convertAEPPropertiesToFlumeConf(Properties properties){
 
     convertedConfig.put ( getAgentName()+".sources","kafkaSource" );
-    convertedConfig.put (getAgentName()+".channels","memchannelHbase memchannelRedis memchannelCtgCache");
-    convertedConfig.put (getAgentName()+".sinks","ctgcacheSink hbaseSink ");
+    convertedConfig.put (getAgentName()+".channels","memchannelHbase  memchannelCtgCache");
+    convertedConfig.put (getAgentName()+".sinks","zctgcacheSink hbaseSink ");
     
     
-    convertedConfig.put (getAgentName()+".sources.kafkaSource.channels","memchannelHbase memchannelRedis");
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.channels","memchannelHbase memchannelCtgCache");
     convertedConfig.put (getAgentName()+".sources.kafkaSource.type","com.ctg.aep.source.kafka.AEPKafkaSource");
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.topics",properties.getProperty ( DataServerConstants.AEP_TOPIC_NAME  ));
     convertedConfig.put (getAgentName()+".sources.kafkaSource.batchSize","1000");
@@ -128,17 +128,17 @@ public class AEPDataServerConfigurationProvider extends
     for ( String s : map2.keySet ( ) ) {
       convertedConfig.put( getAgentName()+".sources.kafkaSource.kafka.consumer." +s,map2.get ( s ));
     }
-    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KINIT_CMD
-            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KINIT_CMD  ));
-    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_WINDOW
-            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KERBEROS_RENEW_WINDOW  ));
-    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_JITTER
-            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KERBEROS_RENEW_JITTER  ));
-    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KERBEROS_RELOGIN_TIME
-            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KERBEROS_RELOGIN_TIME  ));
+//    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KINIT_CMD
+//            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KINIT_CMD  ));
+//    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_WINDOW
+//            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KERBEROS_RENEW_WINDOW  ));
+//    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_JITTER
+//            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KERBEROS_RENEW_JITTER  ));
+//    convertedConfig.put (getAgentName()+".sources.kafkaSource."+ AEPKafkaSourceConstants.KAFKA_KERBEROS_RELOGIN_TIME
+//            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_KERBEROS_RELOGIN_TIME  ));
 
-    convertedConfig.put (getAgentName()+".sources.kafkaSource.useKerberos"
-            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_USE_KERBEROS  ));
+//    convertedConfig.put (getAgentName()+".sources.kafkaSource.useKerberos"
+//            ,properties.getProperty ( DataServerConstants.AEP_KAFKA_USE_KERBEROS  ));
 
     convertedConfig.put (getAgentName()+".sources.kafkaSource.jaasfile"
             ,properties.getProperty ( DataServerConstants.AEP_KAFKA_JAAS_FILE  ));
@@ -149,11 +149,11 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.byteCapacityBufferPercentage","20");
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.keep-alive","3");
 
-    convertedConfig.put (getAgentName()+".channels.memchannelRedis.type","org.apache.flume.channel.MemoryChannel");
-    convertedConfig.put (getAgentName()+".channels.memchannelRedis.capacity","100");
-    convertedConfig.put (getAgentName()+".channels.memchannelRedis.transactionCapacity","100");
-    convertedConfig.put (getAgentName()+".channels.memchannelRedis.byteCapacityBufferPercentage","20");
-    convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.type","org.apache.flume.channel.MemoryChannel");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.capacity","100");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.transactionCapacity","100");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.byteCapacityBufferPercentage","20");
+//    convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
 
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.type","org.apache.flume.channel.MemoryChannel");
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.capacity","100");
@@ -163,15 +163,15 @@ public class AEPDataServerConfigurationProvider extends
 
 
 
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.channel","memchannelCtgCache");
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.type","com.ctg.aep.sink.ctgcache.CtgCacheSink");
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.group",properties.getProperty ( DataServerConstants.CTGCACHE_GROUP  ));
+    convertedConfig.put (getAgentName()+".sinks.zctgcacheSink.channel","memchannelCtgCache");
+    convertedConfig.put (getAgentName()+".sinks.zctgcacheSink.type","com.ctg.aep.sink.ctgcache.CtgCacheSink");
+    convertedConfig.put (getAgentName()+".sinks.zctgcacheSink.group",properties.getProperty ( DataServerConstants.CTGCACHE_GROUP  ));
     String passwd = properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  );
-    LOGGER.info("passwd from properties:"+passwd);
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.passwd",properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  ));
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.user",properties.getProperty ( DataServerConstants.CTGCACHE_USER  ));
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.using_hash",properties.getProperty ( DataServerConstants.CTGCACHE_USING_HASH  ));
-    convertedConfig.put (getAgentName()+".sinks.ctgcacheSink.timeout",properties.getProperty ( DataServerConstants.CTGCACHE_TIMEOUT  ));
+//    LOGGER.info("passwd from properties:"+passwd);
+    convertedConfig.put (getAgentName()+".sinks.zctgcacheSink.passwd",properties.getProperty ( DataServerConstants.CTGCACHE_PASSWD  ));
+    convertedConfig.put (getAgentName()+".sinks.zctgcacheSink.user",properties.getProperty ( DataServerConstants.CTGCACHE_USER  ));
+    convertedConfig.put (getAgentName()+".sinks.zctgcacheSink.using_hash",properties.getProperty ( DataServerConstants.CTGCACHE_USING_HASH  ));
+    convertedConfig.put (getAgentName()+".sinks.zctgcacheSink.timeout",properties.getProperty ( DataServerConstants.CTGCACHE_TIMEOUT  ));
 
 
 

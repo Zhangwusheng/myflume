@@ -17,101 +17,109 @@ public class KerberosTests {
     }
 
     public void initComponents(){
+        /**运行正常*/
         kerberosComponentMap.put(1,new CtgCacheComponent());
-
+        /**先kinit可以成功*/
         kerberosComponentMap.put(2,new KafkaCacheJaas());
+        /**运行成功*/
         kerberosComponentMap.put(3,new KafkaKeyTab());
-
+        /**先kinit*/
         kerberosComponentMap.put(4,new HbaseCacheJassNoLogin());
+        /**运行成功*/
         kerberosComponentMap.put(5,new HbaseCacheJassLogin());
+        /**运行成功*/
         kerberosComponentMap.put(6,new HbaseKeyTabLogin());
+        /**运行失败，权限问题*/
         kerberosComponentMap.put(7,new HbaseKeyTabNoLogin());
 
         CompoundComponent compoundComponent;
 
+        /**运行失败，JAAS问题*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new CtgCacheComponent());
         compoundComponent.addComponent(new KafkaCacheJaas());
         kerberosComponentMap.put(8,compoundComponent);
 
+        /**运行失败，JAAS should use keytab*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new KafkaCacheJaas());
         compoundComponent.addComponent(new CtgCacheComponent());
          kerberosComponentMap.put(9,compoundComponent);
 
-
+        /**运行失败，Jaas configuration not found*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new CtgCacheComponent());
         compoundComponent.addComponent(new KafkaKeyTab());
         kerberosComponentMap.put(10,compoundComponent);
 
-
+        /**Kafka成功，CtgCache监听zookeeper失败*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new KafkaKeyTab());
         compoundComponent.addComponent(new CtgCacheComponent());
         kerberosComponentMap.put(11,compoundComponent);
 
-
-
+        /***CtgCache成功，Hbase失败*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new CtgCacheComponent());
         compoundComponent.addComponent(new HbaseCacheJassNoLogin());
         kerberosComponentMap.put(12,compoundComponent);
 
-
+        /***Hbase失败，没有等待CtgCache*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new HbaseCacheJassNoLogin());
         compoundComponent.addComponent(new CtgCacheComponent());
         kerberosComponentMap.put(13,compoundComponent);
 
 
-
+        /***成功*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new CtgCacheComponent());
         compoundComponent.addComponent(new HbaseCacheJassLogin());
         kerberosComponentMap.put(14,compoundComponent);
 
-
+        /***成功*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new HbaseCacheJassLogin());
         compoundComponent.addComponent(new CtgCacheComponent());
         kerberosComponentMap.put(15,compoundComponent);
 
-
-
+        /***成功*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new CtgCacheComponent());
         compoundComponent.addComponent(new HbaseKeyTabLogin());
         kerberosComponentMap.put(16,compoundComponent);
 
+        /***成功*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new HbaseKeyTabLogin());
         compoundComponent.addComponent(new CtgCacheComponent());
         kerberosComponentMap.put(17,compoundComponent);
 
-
+        /***Hbase失败*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new CtgCacheComponent());
         compoundComponent.addComponent(new HbaseKeyTabNoLogin());
         kerberosComponentMap.put(18,compoundComponent);
 
+        /***Hbase失败*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new HbaseKeyTabNoLogin());
         compoundComponent.addComponent(new CtgCacheComponent());
         kerberosComponentMap.put(19,compoundComponent);
 
-
+        /***Kafka失败*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new KafkaCacheJaas());
         compoundComponent.addComponent(new HbaseCacheJassNoLogin());
         kerberosComponentMap.put(20,compoundComponent);
 
+        /***Kafka失败*/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new KafkaCacheJaas());
         compoundComponent.addComponent(new HbaseCacheJassLogin());
         kerberosComponentMap.put(21,compoundComponent);
 
-
+        /***成功**/
         compoundComponent = new CompoundComponent();
         compoundComponent.addComponent(new KafkaKeyTab());
         compoundComponent.addComponent(new HbaseKeyTabLogin());

@@ -98,10 +98,8 @@ public abstract class AbstractConfigurationProvider implements ConfigurationProv
       Map<String, SinkRunner> sinkRunnerMap = Maps.newHashMap();
       try {
         loadChannels(agentConf, channelComponentMap);
-
-        //下面这两行我换了个顺序，为了调整kerberos的顺序
-        loadSinks(agentConf, channelComponentMap, sinkRunnerMap);
         loadSources(agentConf, channelComponentMap, sourceRunnerMap);
+        loadSinks(agentConf, channelComponentMap, sinkRunnerMap);
 
         Set<String> channelNames = new HashSet<String>(channelComponentMap.keySet());
         for (String channelName : channelNames) {

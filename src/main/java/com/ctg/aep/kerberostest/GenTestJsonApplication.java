@@ -15,9 +15,34 @@ import java.util.Map;
  */
 public class GenTestJsonApplication {
 
+    public static class Payload{
+        double sensor_temperature;
+        double sensor_humidity;
+
+        public double getSensor_temperature() {
+            return sensor_temperature;
+        }
+
+        public void setSensor_temperature(double sensor_temperature) {
+            this.sensor_temperature = sensor_temperature;
+        }
+
+        public double getSensor_humidity() {
+            return sensor_humidity;
+        }
+
+        public void setSensor_humidity(double sensor_humidity) {
+            this.sensor_humidity = sensor_humidity;
+        }
+    }
     public GenTestJsonApplication(){}
 
     public  String generateTestString(){
+
+        Payload opayload = new Payload();
+        opayload.setSensor_humidity(70.0);
+        opayload.setSensor_temperature(29.8);
+
 
         String payload = "{\"sensor_temperature\": 29.8,\"sensor_humidity\":70.0}";
         AEPDataObject aepDataObject = new AEPDataObject();
@@ -34,6 +59,9 @@ public class GenTestJsonApplication {
         ObjectMapper objectMapper = getDefaultObjectMapper();
         String data = null;
         try {
+            payload = objectMapper.writeValueAsString(opayload);
+            aepDataObject.setPayload(payload);
+
             data = objectMapper.writeValueAsString(aepDataObject);
             System.out.println(data);
 

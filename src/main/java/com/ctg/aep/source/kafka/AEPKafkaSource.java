@@ -271,6 +271,8 @@ public class AEPKafkaSource extends AbstractPollableSource
           headers.put(AEPKafkaSourceConstants.KEY_HEADER, kafkaKey);
         }
 
+        log.info("++KafkaMsg:"+new String(eventBody));
+
         if (log.isTraceEnabled()) {
           if (LogPrivacyUtil.allowLogRawData()) {
             log.trace("Topic: {} Partition: {} Message: {}", new String[]{
@@ -409,15 +411,15 @@ public class AEPKafkaSource extends AbstractPollableSource
       log.info("Group ID was not specified. Using {} as the group id.", groupId);
     }
 
-    useKerberos = context.getBoolean(AEPKafkaSourceConstants.USE_KERBEROS);
-    jaasFile = context.getString(AEPKafkaSourceConstants.JAAS_FILE);
+//    useKerberos = context.getBoolean(AEPKafkaSourceConstants.USE_KERBEROS);
+//    jaasFile = context.getString(AEPKafkaSourceConstants.JAAS_FILE);
 
-    kinitCommand = context.getString(AEPKafkaSourceConstants.KAFKA_KINIT_CMD);
+//    kinitCommand = context.getString(AEPKafkaSourceConstants.KAFKA_KINIT_CMD);
     securityProtocol = context.getString(
             AEPKafkaSourceConstants.SECURITY_PROTOCOL_CONFIG);
-    kerberosReloginTime = context.getLong(AEPKafkaSourceConstants.KAFKA_KERBEROS_RELOGIN_TIME);
-    kerberosRenewJitter = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_JITTER));
-    kerberosRenewWindow = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_WINDOW));
+//    kerberosReloginTime = context.getLong(AEPKafkaSourceConstants.KAFKA_KERBEROS_RELOGIN_TIME);
+//    kerberosRenewJitter = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_JITTER));
+//    kerberosRenewWindow = Double.parseDouble(context.getString(AEPKafkaSourceConstants.KAFKA_KERBEROS_RENEW_WINDOW));
 
 
     setConsumerProps(context);
@@ -431,43 +433,43 @@ public class AEPKafkaSource extends AbstractPollableSource
     }
 
 
-    kerberosConfigs = Maps.newHashMap();
-    kerberosConfigs.put("sasl.kerberos.ticket.renew.window.factor",kerberosRenewWindow);
-    kerberosConfigs.put("sasl.kerberos.ticket.renew.jitter",kerberosRenewJitter);
-    kerberosConfigs.put("sasl.kerberos.min.time.before.relogin",kerberosReloginTime);
-    kerberosConfigs.put("sasl.kerberos.kinit.cmd",kinitCommand);
+//    kerberosConfigs = Maps.newHashMap();
+//    kerberosConfigs.put("sasl.kerberos.ticket.renew.window.factor",kerberosRenewWindow);
+//    kerberosConfigs.put("sasl.kerberos.ticket.renew.jitter",kerberosRenewJitter);
+//    kerberosConfigs.put("sasl.kerberos.min.time.before.relogin",kerberosReloginTime);
+//    kerberosConfigs.put("sasl.kerberos.kinit.cmd",kinitCommand);
 
     System.out.println("---------------------------------");
     log.info("Starting {}...", this);
 
     log.info("setting kafka kerberos settings:");
-    String oldConfigFile;
-    if( useKerberos ){
-      log.info("java.security.auth.login.config={}", jaasFile);
-      oldConfigFile = System.setProperty("java.security.auth.login.config",jaasFile);
-      log.info("old config file={}",oldConfigFile);
-    }
+//    String oldConfigFile;
+//    if( useKerberos ){
+//      log.info("java.security.auth.login.config={}", jaasFile);
+//      oldConfigFile = System.setProperty("java.security.auth.login.config",jaasFile);
+//      log.info("old config file={}",oldConfigFile);
+//    }
+//
+//    try {
+//      log.info("Trying login to kafka");
+//      loginManager = LoginManager.acquireLoginManager(
+//              LoginType.CLIENT,useKerberos, kerberosConfigs);
+//      log.info("Success login to kafka");
+//    } catch (IOException e) {
+//      log.info("Failed login to kafka");
+//      String error = ExceptionUtils.getStackTrace(e);
+//      log.error(error);
+//      throw  new FlumeException(e);
+//    } catch (LoginException e) {
+//      log.info("Failed login to kafka");
+//      String error = ExceptionUtils.getStackTrace(e);
+//      log.error(error);
+//      throw  new FlumeException(e);
+//    }
 
-    try {
-      log.info("Trying login to kafka");
-      loginManager = LoginManager.acquireLoginManager(
-              LoginType.CLIENT,useKerberos, kerberosConfigs);
-      log.info("Success login to kafka");
-    } catch (IOException e) {
-      log.info("Failed login to kafka");
-      String error = ExceptionUtils.getStackTrace(e);
-      log.error(error);
-      throw  new FlumeException(e);
-    } catch (LoginException e) {
-      log.info("Failed login to kafka");
-      String error = ExceptionUtils.getStackTrace(e);
-      log.error(error);
-      throw  new FlumeException(e);
-    }
-
-    System.out.println(loginManager.serviceName());
-    System.out.println(loginManager.subject().toString());
-    System.out.println("---------------------------------");
+//    System.out.println(loginManager.serviceName());
+//    System.out.println(loginManager.subject().toString());
+//    System.out.println("---------------------------------");
 
 
     // As a migration step check if there are any offsets from the group stored in kafka
@@ -531,10 +533,10 @@ public class AEPKafkaSource extends AbstractPollableSource
 
 
     //zws
-    kafkaProps.put(AEPKafkaSourceConstants.KINIT_CMD,kinitCommand);
-    kafkaProps.put(AEPKafkaSourceConstants.KERBEROS_RELOGIN_TIME,kerberosReloginTime);
-    kafkaProps.put(AEPKafkaSourceConstants.KERBEROS_RENEW_JITTER,kerberosRenewJitter);
-    kafkaProps.put(AEPKafkaSourceConstants.KERBEROS_RENEW_WINDOW,kerberosRenewWindow);
+//    kafkaProps.put(AEPKafkaSourceConstants.KINIT_CMD,kinitCommand);
+//    kafkaProps.put(AEPKafkaSourceConstants.KERBEROS_RELOGIN_TIME,kerberosReloginTime);
+//    kafkaProps.put(AEPKafkaSourceConstants.KERBEROS_RENEW_JITTER,kerberosRenewJitter);
+//    kafkaProps.put(AEPKafkaSourceConstants.KERBEROS_RENEW_WINDOW,kerberosRenewWindow);
     kafkaProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,securityProtocol);
   }
 

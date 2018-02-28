@@ -26,6 +26,7 @@ import com.google.common.base.Throwables;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import org.apache.commons.lang.StringUtils;
 import org.apache.flume.*;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurationException;
@@ -143,6 +144,7 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
   private void getAEPDataObject(Event event){
     byte[] bodyBytes = event.getBody ();
     String body = new String ( bodyBytes );
+    body = StringUtils.trim(body);
 
     if( logger.isDebugEnabled()) {
       logger.info("Deserialize event.....");
@@ -151,8 +153,8 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     }
 
     try {
-      aepDataObject = objectMapper.readValue (bodyBytes, AEPDataObject.class );
-      logger.info("Deserialize event.....SUCCESS");
+      aepDataObject = objectMapper.readValue (body, AEPDataObject.class );
+      logger.info("Redis Deserialize event.....SUCCESS:{}",body);
     }
     catch ( IOException e ) {
       aepDataObject = null;
@@ -173,8 +175,9 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     Map<String,Object> result;
     try {
       result = objectMapper.readValue(payload.getBytes(), Map.class);
+      logger.info("----------- CtgCache:decode Payload Success:"+payload);
     } catch (IOException e) {
-      logger.info("decode payload failed:"+payload);
+      logger.info("*********** CtgCache:decode payload failed:"+payload);
       return;
     }
 
@@ -185,8 +188,10 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
 
       String code = cacheService.set(groupId, itemKey, value);
       if( !code.equals(CacheResponse.OK_CODE)){
-        logger.error("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
+        logger.error("CtgCache Failed returns:"+code+",Key="+itemKey+",vlaue="+value);
         throw new FlumeException("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
+      }else{
+        logger.info("CtgCache Set Success:Key="+itemKey+",vlaue="+value);
       }
     }
   }
@@ -201,16 +206,22 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
       txn.begin();
       Event event = channel.take();
       if( event == null ){
+        logger.info("CtgCache event is null......... ");
+        txn.commit();
         return Status.BACKOFF;
       }
 
       getAEPDataObject(event);
 
       if( this.aepDataObject == null ){
+        logger.info("aepDataObject  is null......... ");
+        txn.commit();
         return Status.READY;
       }
 
+      logger.info("writeDataToRedis......... ");
       writeDataToRedis();
+      logger.info("Success writeDataToRedis......... ");
       txn.commit();
       return Status.READY;
 

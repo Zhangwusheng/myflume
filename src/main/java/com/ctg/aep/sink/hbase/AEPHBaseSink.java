@@ -29,6 +29,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.lang.StringUtils;
 import org.apache.flume.*;
 import org.apache.flume.annotations.InterfaceAudience;
 import org.apache.flume.auth.FlumeAuthenticationUtil;
@@ -140,51 +141,12 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     try {
       privilegedExecutor =
               FlumeAuthenticationUtil.getAuthenticator(kerberosPrincipal, kerberosKeytab);
-//      privilegedExecutor =
-//              FlumeAuthenticationUtil.getAuthenticator(null, null);
     } catch (Exception ex) {
       sinkCounter.incrementConnectionFailedCount();
       throw new FlumeException("Failed to login to HBase using "
               + "provided credentials.", ex);
     }
-//    try {
-//      table = privilegedExecutor.execute(new PrivilegedExceptionAction<HTable>() {
-//        @Override
-//        public HTable run() throws Exception {
-//          HTable table = new HTable(config, tableName);
-//          table.setAutoFlush(false);
-//          // Flush is controlled by us. This ensures that HBase changing
-//          // their criteria for flushing does not change how we flush.
-//          return table;
-//        }
-//      });
-//    } catch (Exception e) {
-//      sinkCounter.incrementConnectionFailedCount();
-//      logger.error("Could not load table, " + tableName +
-//              " from HBase", e);
-//      throw new FlumeException("Could not load table, " + tableName +
-//              " from HBase", e);
-//    }
-//    try {
-//      if (!privilegedExecutor.execute(new PrivilegedExceptionAction<Boolean>() {
-//        @Override
-//        public Boolean run() throws IOException {
-//          return table.getTableDescriptor().hasFamily(columnFamily);
-//        }
-//      })) {
-//        throw new IOException("Table " + tableName
-//                + " has no such column family " + Bytes.toString(columnFamily));
-//      }
-//    } catch (Exception e) {
-//      //Get getTableDescriptor also throws IOException, so catch the IOException
-//      //thrown above or by the getTableDescriptor() call.
-//      sinkCounter.incrementConnectionFailedCount();
-//      throw new FlumeException("Error getting column family from HBase."
-//              + "Please verify that the table " + tableName + " and Column Family, "
-//              + Bytes.toString(columnFamily) + " exists in HBase, and the"
-//              + " current user has permissions to access that table.", e);
-//    }
-    
+
     super.start();
 //    sinkCounter.incrementConnectionCreatedCount();
     sinkCounter.start();
@@ -192,14 +154,6 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   
   @Override
   public void stop() {
-//    try {
-//      if (table != null) {
-//        table.close();
-//      }
-//      table = null;
-//    } catch (IOException e) {
-//      throw new FlumeException("Error closing table.", e);
-//    }
     sinkCounter.incrementConnectionClosedCount();
     sinkCounter.stop();
   }
@@ -240,11 +194,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     //If not specified, will use HBase defaults.
     eventSerializerType = context.getString(
             HBaseSinkConfigurationConstants.CONFIG_SERIALIZER);
-//    Preconditions.checkNotNull(tableName,
-//        "Table name cannot be empty, please specify in configuration file");
-//    Preconditions.checkNotNull(cf,
-//        "Column family cannot be empty, please specify in configuration file");
-    //Check foe event serializer, if null set event serializer type
+
     if (eventSerializerType == null || eventSerializerType.isEmpty()) {
       eventSerializerType =
               "com.ctg.aep.sink.hbase.SimpleAEPHbaseEventSerializer";
@@ -272,7 +222,10 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     if( hostName == null ){
       throw new FlumeException("Can't getenv HOSTNAME");
     }
-    kerberosPrincipal = kerberosPrincipal.replace("${HOSTNAME}",hostName);
+
+    if(kerberosPrincipal != null  ) {
+      kerberosPrincipal = kerberosPrincipal.replace("${HOSTNAME}", hostName);
+    }
 
     logger.info ( "kerberosKeytab={}",kerberosKeytab );
     logger.info ( "kerberosPrincipal={}",kerberosPrincipal );
@@ -350,12 +303,14 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     byte[] bodyBytes = event.getBody ();
     String body = new String ( bodyBytes );
 
+    body = StringUtils.trim(body);
+
     logger.info("Deserialize event.....");
     ByteBuf byteBuf = Unpooled.copiedBuffer ( bodyBytes );
     ByteBufUtil.prettyHexDump(byteBuf);
     
     try {
-      aepDataObject = objectMapper.readValue (bodyBytes, AEPDataObject.class );
+      aepDataObject = objectMapper.readValue (body, AEPDataObject.class );
       logger.info("Deserialize event.....SUCCESS");
     }
     catch ( IOException e ) {
@@ -405,9 +360,10 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     try {
       namespaceDescriptor = hbaseAdmin.getNamespaceDescriptor ( namespace );
     }catch(NamespaceNotFoundException e){
+      logger.info("namespace {} not found,create it",namespace);
+
       namespaceDescriptor = NamespaceDescriptor.create ( namespace ).build ();
       hbaseAdmin.createNamespace ( namespaceDescriptor );
-
       logger.info("createNamespace {}.....SUCCESS",namespace );
     }
   
@@ -415,6 +371,8 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
 
     TableName tableName = TableName.valueOf ( tableInfo.getFirst ( ), tableInfo.getSecond ( ) );
     try {
+      logger.info("table {} not found,create it",tableInfo.getSecond());
+
       hbaseAdmin.getTableDescriptor ( tableName );
       logger.info(" {}.{} EXISTS.....",tableInfo.getFirst(),tableInfo.getSecond() );
       return true;
@@ -430,10 +388,9 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       connection.getTable ( tableName );
 
       logger.info(" {}.{} Table Create SUCCESS.....",tableInfo.getFirst(),tableInfo.getSecond() );
-
     }
 
-//    stringNamespaceDescriptorMap.put (namespace, namespaceDescriptor );
+    stringNamespaceDescriptorMap.put (namespace, namespaceDescriptor );
     return true;
   }
   
@@ -442,23 +399,25 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private void createNamespaceOrTableIfNecessary(Event event) throws Exception{
   
     namespaceNameAndTblName = getNamespaceAndTableName(event);
+    logger.info("namespaceNameAndTblName="+namespaceNameAndTblName);
     
     final String namespace = namespaceNameAndTblName.getFirst ();
     
     if( stringNamespaceDescriptorMap.containsKey ( namespace ))
     {
+      logger.info("namespaceNameAndTblName {} Found in Cache"+namespaceNameAndTblName);
       return;
     }
 
     try {
-      
-      privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
-        @Override
-        public Void run() throws Exception {
-          createNamespaceOrTableIfNecessary(namespaceNameAndTblName);
-          return null;
-        }
-      });
+      createNamespaceOrTableIfNecessary(namespaceNameAndTblName);
+//      privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
+//        @Override
+//        public Void run() throws Exception {
+//          createNamespaceOrTableIfNecessary(namespaceNameAndTblName);
+//          return null;
+//        }
+//      });
     }
     catch ( IOException e ) {
       logger.warn ( "Failed to create hbase ns or table:{} ",e );
@@ -507,9 +466,6 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
             rows.addAll ( serializer.getActions() );
             myHbaseAction.put ( tableName, rows);
           }
-          
-          
-         
 //          actions.addAll(serializer.getActions());
           //默认值非空，会返回这些列。这里我觉得不需要，所以就取消了
 //          incs.addAll(serializer.getIncrements());
@@ -551,9 +507,9 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private void putEventsAndCommit2(Transaction txn) throws Exception {
 
     logger.info("putEventsAndCommit2 Called...");
-    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
-      @Override
-      public Void run() throws Exception {
+//    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
+//      @Override
+//      public Void run() throws Exception {
   
         for ( Map.Entry< TableName, List< Row > > tableNameListEntry : myHbaseAction.entrySet ( ) ) {
           TableName tableName = tableNameListEntry.getKey ();
@@ -580,34 +536,10 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
           hTable.batch ( rowList ,result);
         }
         
-        return null;
-      }
-    });
-    
-//    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
-//      @Override
-//      public Void run() throws Exception {
-//
-//        List<Increment> processedIncrements;
-//        if (batchIncrements) {
-//          processedIncrements = coalesceIncrements(incs);
-//        } else {
-//          processedIncrements = incs;
-//        }
-//
-//        // Only used for unit testing.
-//        if (debugIncrCallback != null) {
-//          debugIncrCallback.onAfterCoalesce(processedIncrements);
-//        }
-//
-//        for (final Increment i : processedIncrements) {
-//          i.setWriteToWAL(enableWal);
-//          table.increment(i);
-//        }
 //        return null;
 //      }
 //    });
-    
+
     txn.commit();
     myHbaseAction.clear();
   

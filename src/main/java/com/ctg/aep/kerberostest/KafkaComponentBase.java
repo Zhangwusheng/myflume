@@ -48,6 +48,7 @@ public abstract class KafkaComponentBase extends BaseComponent {
         consumer.subscribe(topics);
         it = consumer.poll(1000).iterator();
 
+        int i = 0;
         while (true) {
             while (it.hasNext()) {
                 ConsumerRecord<String, byte[]> message = it.next();
@@ -59,6 +60,11 @@ public abstract class KafkaComponentBase extends BaseComponent {
             }
 
             it = consumer.poll(1000).iterator();
+            i++;
+
+            if( i> 20 ){
+                break;
+            }
         }
     }
 }

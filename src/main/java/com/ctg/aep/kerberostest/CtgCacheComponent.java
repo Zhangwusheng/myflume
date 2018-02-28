@@ -1,5 +1,7 @@
 package com.ctg.aep.kerberostest;
 
+import com.ctg.itrdc.cache.core.CacheService;
+
 public class CtgCacheComponent extends BaseComponent {
 
     private CacheService cacheService;
@@ -10,12 +12,13 @@ public class CtgCacheComponent extends BaseComponent {
     private String[] groups = {groupId};
 
     @Override
-    public void initialize() {
+    public void initialize() throws Exception{
+        System.clearProperty(JassKey);
         cacheService = new CacheService(groups, timeout, user, passwd);
     }
 
     @Override
-    public void doWork() {
+    public void doWork() throws Exception {
 
         System.out.println("*****************CtgCacheComponent.work******************");
 
