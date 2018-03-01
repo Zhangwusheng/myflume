@@ -7,7 +7,7 @@
           <encoder>
               <!--<pattern>[%d][%thread][%level][%logger{0}:%L]%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''} - %msg%n</pattern>-->
               <!--<pattern>[%d][%thread][%level][%logger{0}]-%msg%n</pattern>-->
-              <pattern>[%d][%level]-%msg%n</pattern>
+              <pattern>[%d][%logger{0}[%level]-%msg%n</pattern>
               <charset>UTF-8</charset>
         </encoder>
     </appender>
@@ -21,8 +21,7 @@
         </rollingPolicy>
 
         <encoder>
-
-            <pattern>[%d][%level]-%msg%n</pattern>
+            <pattern>[%d][%logger{0}[%level]-%msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
 
