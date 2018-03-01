@@ -5,8 +5,9 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
           <encoder>
-              <pattern>[%d][%thread][%level][%logger{0}:%L]%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''} - %msg%n</pattern>
+              <!--<pattern>[%d][%thread][%level][%logger{0}:%L]%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''} - %msg%n</pattern>-->
               <!--<pattern>[%d][%thread][%level][%logger{0}]-%msg%n</pattern>-->
+              <pattern>[%d][%level]-%msg%n</pattern>
               <charset>UTF-8</charset>
         </encoder>
     </appender>
@@ -20,7 +21,8 @@
         </rollingPolicy>
 
         <encoder>
-            <pattern>[%d][%thread][%level][%logger{0}:%L]-%msg%n</pattern>
+
+            <pattern>[%d][%level]-%msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
 
@@ -31,6 +33,14 @@
     </logger>
 
     <logger name="org.apache.kafka.common.metrics.Metrics">
+        <level value="ERROR" />
+    </logger>
+ 
+    <logger name="com.ctg.itrdc.cache.core.config.Accessor">
+	<level value="ERROR" />
+    </logger>
+
+    <logger name="com.ctg.itrdc.cache.core.config.ClientAccessor">
         <level value="ERROR" />
     </logger>
 
