@@ -69,7 +69,6 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
   private KeyType keyType;
   private byte[] payload;
   private AEPDataObject aepDataObject;
-//  private Map<String,Object> mapDataObject;
 
   private ByteBuf byteBuf = Unpooled.buffer(256);
 
@@ -114,7 +113,6 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
     this.payload = event.getBody();
     this.cf = cf;
     this.aepDataObject = aepDataObject;
-//    this.mapDataObject = aepDataObject;
   }
 
 
@@ -130,7 +128,7 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
     byteBuf.writeInt(random.nextInt());
 
     String sss = ByteBufUtil.prettyHexDump(byteBuf);
-    logger.info("Hbase KEY:|{}|",sss);
+    logger.info("Hbase KEY:\n{}",sss);
 
     byte[] rowKey = new byte[ byteBuf.readableBytes() ];
     byteBuf.readBytes(rowKey);

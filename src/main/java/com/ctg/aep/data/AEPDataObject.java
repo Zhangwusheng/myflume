@@ -182,7 +182,7 @@ public class AEPDataObject {
 
         setTenantId((String)objectMap.get(AEPDataObjectConstants.TENANTID));
         setProductId((String)objectMap.get(AEPDataObjectConstants.PRODUCTID));
-
+        setTimestamp((Long)objectMap.get(AEPDataObjectConstants.TIMESTAMP));
         setDeviceId((String)objectMap.get(AEPDataObjectConstants.DEVICEID));
 
         try {

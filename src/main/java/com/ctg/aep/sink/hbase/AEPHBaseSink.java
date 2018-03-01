@@ -85,7 +85,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private Method refGetFamilyMap = null;
   private SinkCounter sinkCounter;
   private PrivilegedExecutor privilegedExecutor;
-  
+
   private Admin hbaseAdmin;
   private Connection connection;
   private ObjectMapper objectMapper;
@@ -93,30 +93,27 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private String uberTableName;
   private Boolean autoCreateNamespace;
   private AEPDataObject aepDataObject;
-//  private Map<String,Object> mapDataObject;
-//  private org.joda.time.DateTime
-
 
   private Map<String,NamespaceDescriptor> stringNamespaceDescriptorMap = Maps.newHashMap (  );
   // Internal hooks used for unit testing.
   private DebugIncrementsCallback debugIncrCallback = null;
-  
+
   public AEPHBaseSink () {
     this(HBaseConfiguration.create());
   }
-  
+
   public AEPHBaseSink ( Configuration conf) {
     this.config = conf;
   }
-  
+
   @VisibleForTesting
   @InterfaceAudience.Private
   AEPHBaseSink ( Configuration conf, DebugIncrementsCallback cb) {
     this(conf);
     this.debugIncrCallback = cb;
   }
-  
-  
+
+
   private ObjectMapper getDefaultObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
     //设置将对象转换成JSON字符串时候:包含的属性不能为空或"";
@@ -125,19 +122,19 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     //Include.NON_EMPTY 属性为空（""）  或者为 NULL 都不序列化
     //Include.NON_NULL 属性为NULL 不序列化
     mapper.setSerializationInclusion( JsonSerialize.Inclusion.NON_EMPTY);
-    
+
     //设置将MAP转换为JSON时候只转换值不等于NULL的
     mapper.configure( SerializationConfig.Feature.WRITE_NULL_MAP_VALUES, false);
     mapper.setDateFormat(new SimpleDateFormat ("yyyy-MM-ddHH:mm:ss"));
 //     mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true);
-    
+
     //设置有属性不能映射成PO时不报错
     mapper.disable( DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
 //     mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,false);  上一条也可以如此设置；
-    
+
     return mapper;
   }
-  
+
   @Override
   public void start() {
     Preconditions.checkArgument(table == null, "Please call stop " +
@@ -152,32 +149,31 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     }
 
     super.start();
-//    sinkCounter.incrementConnectionCreatedCount();
+    sinkCounter.incrementConnectionCreatedCount();
     sinkCounter.start();
   }
-  
+
   @Override
   public void stop() {
     sinkCounter.incrementConnectionClosedCount();
     sinkCounter.stop();
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   public void configure(Context context) {
-    
-    logger.info ( "---------------com.ctg.aep.sink.hbase.HBaseSink.configure called" );
+    logger.info ( "AEPHBaseSink.configure called" );
 
     autoCreateNamespace = context.getBoolean ( HBaseSinkConfigurationConstants.AUTO_CREATE_NAMESPACE,false );
     if( autoCreateNamespace ){
-      logger.info ( "HBaseSinkConfigurationConstants.autoCreateNamespace set to true" );
+      logger.info ( "AEPHBaseSink autoCreateNamespace set to true" );
     }
-    
+
     uberNamespace = context.getString ( HBaseSinkConfigurationConstants.UBER_NAMESPACE_NAME );
     uberTableName = context.getString ( HBaseSinkConfigurationConstants.UBER_TABLE_NAME );
-    
+
     objectMapper =  getDefaultObjectMapper();
-    
+
     try {
       connection = ConnectionFactory.createConnection(this.config);
       hbaseAdmin =connection.getAdmin ();
@@ -187,8 +183,6 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       throw new ConfigurationException ( e );
     }
 
-
-//    tableName = context.getString( HBaseSinkConfigurationConstants.CONFIG_TABLE);
     String cf = context.getString(
             HBaseSinkConfigurationConstants.CONFIG_COLUMN_FAMILY);
     logger.info ( "cf={}",cf);
@@ -200,13 +194,12 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
             HBaseSinkConfigurationConstants.CONFIG_SERIALIZER);
 
     if (eventSerializerType == null || eventSerializerType.isEmpty()) {
-      eventSerializerType =
-              "com.ctg.aep.sink.hbase.SimpleAEPHbaseEventSerializer";
-      logger.info("No serializer defined, Will use default:com.ctg.aep.sink.hbase.SimpleHbaseEventSerializer");
+      eventSerializerType = "com.ctg.aep.sink.hbase.SimpleAEPHbaseEventSerializer";
+      logger.info("No serializer defined, Will use default:{}",eventSerializerType);
     }
     serializerContext.putAll(context.getSubProperties(
             HBaseSinkConfigurationConstants.CONFIG_SERIALIZER_PREFIX));
-    
+
     columnFamily = cf.getBytes(Charsets.UTF_8);
     try {
       Class<? extends AEPHbaseEventSerializer > clazz =
@@ -218,7 +211,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       logger.error("Could not instantiate event serializer.", e);
       Throwables.propagate(e);
     }
-    
+
     kerberosKeytab = context.getString( HBaseSinkConfigurationConstants.CONFIG_KEYTAB);
     kerberosPrincipal = context.getString( HBaseSinkConfigurationConstants.CONFIG_PRINCIPAL);
 
@@ -231,9 +224,9 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       kerberosPrincipal = kerberosPrincipal.replace("${HOSTNAME}", hostName);
     }
 
-    logger.info ( "kerberosKeytab={}",kerberosKeytab );
-    logger.info ( "kerberosPrincipal={}",kerberosPrincipal );
-    
+//    logger.info ( "kerberosKeytab={}",kerberosKeytab );
+//    logger.info ( "kerberosPrincipal={}",kerberosPrincipal );
+
     enableWal = context.getBoolean( HBaseSinkConfigurationConstants
             .CONFIG_ENABLE_WAL, HBaseSinkConfigurationConstants.DEFAULT_ENABLE_WAL);
     logger.info("The write to WAL option is set to: " + String.valueOf(enableWal));
@@ -242,19 +235,18 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
               "writes to HBase will have WAL disabled, and any data in the " +
               "memstore of this region in the Region Server could be lost!");
     }
-    
+
     batchIncrements = context.getBoolean(
             HBaseSinkConfigurationConstants.CONFIG_COALESCE_INCREMENTS,
             HBaseSinkConfigurationConstants.DEFAULT_COALESCE_INCREMENTS);
-    
+
     if (batchIncrements) {
       logger.info("Increment coalescing is enabled. Increments will be " +
               "buffered.");
       refGetFamilyMap = reflectLookupGetFamilyMap();
     }
-    
-    String zkQuorum = context.getString( HBaseSinkConfigurationConstants
-            .ZK_QUORUM);
+
+    String zkQuorum = context.getString( HBaseSinkConfigurationConstants.ZK_QUORUM);
     Integer port = null;
     /**
      * HBase allows multiple nodes in the quorum, but all need to use the
@@ -291,18 +283,17 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       this.config.set(HConstants.ZOOKEEPER_QUORUM, zkQuorum);
       this.config.setInt(HConstants.ZOOKEEPER_CLIENT_PORT, port);
     }
-    String hbaseZnode = context.getString(
-            HBaseSinkConfigurationConstants.ZK_ZNODE_PARENT);
+    String hbaseZnode = context.getString(HBaseSinkConfigurationConstants.ZK_ZNODE_PARENT);
     if (hbaseZnode != null && !hbaseZnode.isEmpty()) {
       this.config.set(HConstants.ZOOKEEPER_ZNODE_PARENT, hbaseZnode);
     }
     sinkCounter = new SinkCounter(this.getName());
   }
-  
+
   public Configuration getConfig() {
     return config;
   }
-  
+
   private void getAEPDataObject(Event event){
     this.aepDataObject = null;
 
@@ -336,7 +327,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       return;
     }
   }
-  
+
   /**
    * 这里在解析json失败后，返回一个已有的NS和TableName(这个NS和TableName是事先创建好的）
    * 这样不会丢失数据（这个建好的表必须符合已有的数据结构，拥有已有的列簇）
@@ -366,7 +357,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
 //      return new Pair<> ( uberNamespace, uberTableName );
 //    }
 //  }
-  
+
   private Pair<String,String> getNamespaceAndTableName(Event event){
 
     getAEPDataObject(event);
@@ -386,10 +377,10 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       return new Pair<> ( uberNamespace, uberTableName );
     }
   }
-  
+
   private Map<TableName,List<Row>> myHbaseAction = new HashedMap (  );
   private Map<TableName,HTable> myHbaseTables = new HashedMap (  );
-  
+
   private Boolean createNamespaceOrTableIfNecessary(Pair<String,String> tableInfo) throws IOException{
     String namespace = tableInfo.getFirst ();
     NamespaceDescriptor namespaceDescriptor;
@@ -402,25 +393,24 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       hbaseAdmin.createNamespace ( namespaceDescriptor );
       logger.info("createNamespace {}.....SUCCESS",namespace );
     }
-  
+
     //确保建表成功
 
     TableName tableName = TableName.valueOf ( tableInfo.getFirst ( ), tableInfo.getSecond ( ) );
     try {
-      logger.info("table {} not found,create it",tableInfo.getSecond());
 
       hbaseAdmin.getTableDescriptor ( tableName );
       logger.info(" {}.{} EXISTS.....",tableInfo.getFirst(),tableInfo.getSecond() );
       return true;
     }catch ( TableNotFoundException ex ){
+      logger.info("table {} not found,create it",tableInfo.getSecond());
       HTableDescriptor hTableDescriptor = new HTableDescriptor(tableName);
-  
       HColumnDescriptor hcd = new HColumnDescriptor(columnFamily);
       hcd.setBlocksize(16*1024*1024);
       hTableDescriptor.addFamily(hcd);
-  
+
       hbaseAdmin.createTable ( hTableDescriptor );
-      
+
       connection.getTable ( tableName );
 
       logger.info(" {}.{} Table Create SUCCESS.....",tableInfo.getFirst(),tableInfo.getSecond() );
@@ -429,16 +419,16 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     stringNamespaceDescriptorMap.put (namespace, namespaceDescriptor );
     return true;
   }
-  
+
   private Pair<String,String> namespaceNameAndTblName;
-  
+
   private void createNamespaceOrTableIfNecessary(Event event) throws Exception{
-  
+
     namespaceNameAndTblName = getNamespaceAndTableName(event);
     logger.info("namespaceNameAndTblName="+namespaceNameAndTblName);
-    
+
     final String namespace = namespaceNameAndTblName.getFirst ();
-    
+
     if( stringNamespaceDescriptorMap.containsKey ( namespace ))
     {
       logger.info("namespaceNameAndTblName {} Found in Cache"+namespaceNameAndTblName);
@@ -461,7 +451,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       return;
     }
   }
-  
+
   @Override
   public Status process() throws EventDeliveryException {
     Status status = Status.READY;
@@ -471,11 +461,11 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     List<Increment> incs = new LinkedList<Increment>();
     try {
       txn.begin();
-      
+
       if (serializer instanceof BatchAware ) {
         ((BatchAware ) serializer).onBatchStart();
       }
-      
+
       long i = 0;
       for (; i < batchSize; i++) {
         Event event = channel.take();
@@ -488,13 +478,13 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
           }
           break;
         } else {
-          
+
           createNamespaceOrTableIfNecessary(event);
           TableName tableName = TableName.valueOf ( namespaceNameAndTblName.getFirst (),
                   namespaceNameAndTblName.getSecond ()) ;
-  
+
           serializer.initialize(aepDataObject, event, columnFamily);
-          
+
           if( myHbaseAction.containsKey (tableName )){
             myHbaseAction.get ( tableName ).addAll ( serializer.getActions() );
           }else{
@@ -511,10 +501,10 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
         sinkCounter.incrementBatchCompleteCount();
       }
       sinkCounter.addToEventDrainAttemptCount(i);
-  
+
       putEventsAndCommit2(txn);
 //      putEventsAndCommit(actions, incs, txn);
-      
+
     } catch (Throwable e) {
       try {
         txn.rollback();
@@ -539,60 +529,59 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     }
     return status;
   }
-  
+
   private void putEventsAndCommit2(Transaction txn) throws Exception {
 
     logger.info("putEventsAndCommit2 Called...");
 //    privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
 //      @Override
 //      public Void run() throws Exception {
-  
-        for ( Map.Entry< TableName, List< Row > > tableNameListEntry : myHbaseAction.entrySet ( ) ) {
-          TableName tableName = tableNameListEntry.getKey ();
 
-          logger.info("writing to {},{}",tableName.getNamespaceAsString(), tableName.getNameAsString());
+    for ( Map.Entry< TableName, List< Row > > tableNameListEntry : myHbaseAction.entrySet ( ) ) {
+      TableName tableName = tableNameListEntry.getKey ();
 
-          Table hTable = connection.getTable ( tableName );
-          List<Row> rowList = tableNameListEntry.getValue ();
-  
-          for (Row r : rowList) {
-            if (r instanceof Put) {
-//              ((Put) r).setWriteToWAL(enableWal);
-              ((Put) r).setDurability(enableWal?Durability.USE_DEFAULT:Durability.SKIP_WAL);
-            }
-            // Newer versions of HBase - Increment implements Row.
-            if (r instanceof Increment) {
-              ((Increment) r).setWriteToWAL(enableWal);
-            }
-          }
+      logger.info("writing to {},{}",tableName.getNamespaceAsString(), tableName.getNameAsString());
 
-          logger.info("batch called,total size:{}",rowList.size());
+      Table hTable = connection.getTable ( tableName );
+      List<Row> rowList = tableNameListEntry.getValue ();
 
-          Object[] result = new Object[rowList.size()];
-          hTable.batch ( rowList ,result);
+      for (Row r : rowList) {
+        if (r instanceof Put) {
+          ((Put) r).setDurability(enableWal?Durability.USE_DEFAULT:Durability.SKIP_WAL);
         }
-        
+        // Newer versions of HBase - Increment implements Row.
+        if (r instanceof Increment) {
+          ((Increment) r).setWriteToWAL(enableWal);
+        }
+      }
+
+      logger.info("batch called,total size:{}",rowList.size());
+
+      Object[] result = new Object[rowList.size()];
+      hTable.batch ( rowList ,result);
+    }
+
 //        return null;
 //      }
 //    });
 
     txn.commit();
     myHbaseAction.clear();
-  
+
     int nTotal = 0;
     for ( Map.Entry< TableName, List< Row > > tableNameListEntry : myHbaseAction.entrySet ( ) ) {
-      
+
       List<Row> rowList = tableNameListEntry.getValue ();
       nTotal += rowList.size ();
-      
+
     }
-    
+
     sinkCounter.addToEventDrainSuccessCount(nTotal);
   }
-  
+
   private void putEventsAndCommit(final List<Row> actions,
                                   final List<Increment> incs, Transaction txn) throws Exception {
-    
+
     privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
       @Override
       public Void run() throws Exception {
@@ -609,23 +598,23 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
         return null;
       }
     });
-    
+
     privilegedExecutor.execute(new PrivilegedExceptionAction<Void>() {
       @Override
       public Void run() throws Exception {
-        
+
         List<Increment> processedIncrements;
         if (batchIncrements) {
           processedIncrements = coalesceIncrements(incs);
         } else {
           processedIncrements = incs;
         }
-        
+
         // Only used for unit testing.
         if (debugIncrCallback != null) {
           debugIncrCallback.onAfterCoalesce(processedIncrements);
         }
-        
+
         for (final Increment i : processedIncrements) {
           i.setWriteToWAL(enableWal);
           table.increment(i);
@@ -633,11 +622,11 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
         return null;
       }
     });
-    
+
     txn.commit();
     sinkCounter.addToEventDrainSuccessCount(actions.size());
   }
-  
+
   /**
    * The method getFamilyMap() is no longer available in Hbase 0.96.
    * We must use reflection to determine which version we may use.
@@ -667,7 +656,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     }
     return m;
   }
-  
+
   @SuppressWarnings("unchecked")
   private Map<byte[], NavigableMap<byte[], Long>> getFamilyMap(Increment inc) {
     Preconditions.checkNotNull(refGetFamilyMap,
@@ -686,7 +675,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     }
     return familyMap;
   }
-  
+
   /**
    * Perform "compression" on the given set of increments so that Flume sends
    * the minimum possible number of RPC operations to HBase per batch.
@@ -713,7 +702,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
         }
       }
     }
-    
+
     // Reconstruct list of Increments per unique row/family/qualifier.
     List<Increment> coalesced = Lists.newLinkedList();
     for (Map.Entry<byte[], Map<byte[], NavigableMap<byte[], Long>>> rowEntry :
@@ -732,10 +721,10 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       }
       coalesced.add(inc);
     }
-    
+
     return coalesced;
   }
-  
+
   /**
    * Helper function for {@link #coalesceIncrements} to increment a counter
    * value in the passed data structure.
@@ -749,19 +738,19 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private void incrementCounter(
           Map<byte[], Map<byte[], NavigableMap<byte[], Long>>> counters,
           byte[] row, byte[] family, byte[] qualifier, Long count) {
-    
+
     Map<byte[], NavigableMap<byte[], Long>> families = counters.get(row);
     if (families == null) {
       families = Maps.newTreeMap(Bytes.BYTES_COMPARATOR);
       counters.put(row, families);
     }
-    
+
     NavigableMap<byte[], Long> qualifiers = families.get(family);
     if (qualifiers == null) {
       qualifiers = Maps.newTreeMap(Bytes.BYTES_COMPARATOR);
       families.put(family, qualifiers);
     }
-    
+
     Long existingValue = qualifiers.get(qualifier);
     if (existingValue == null) {
       qualifiers.put(qualifier, count);
@@ -769,13 +758,13 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       qualifiers.put(qualifier, existingValue + count);
     }
   }
-  
+
   @VisibleForTesting
   @InterfaceAudience.Private
   AEPHbaseEventSerializer getSerializer() {
     return serializer;
   }
-  
+
   @VisibleForTesting
   @InterfaceAudience.Private
   interface DebugIncrementsCallback {
