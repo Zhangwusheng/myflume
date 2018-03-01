@@ -122,6 +122,7 @@ public class AEPDataServerConfigurationProvider extends
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.bootstrap.servers",properties.getProperty ( DataServerConstants.AEP_BOOTSTRAP_SERVER ));
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.consumer.security.protocol",properties.getProperty ( DataServerConstants.KAFKA_SECURITY_PROTOCOL  ));
     convertedConfig.put (getAgentName()+".sources.kafkaSource.kafka.security.protocol",properties.getProperty ( DataServerConstants.KAFKA_SECURITY_PROTOCOL  ));
+    convertedConfig.put (getAgentName()+".sources.kafkaSource.debug",properties.getProperty ( DataServerConstants.KAFKA_DEBUG_MODE,"false"  ));
 
     Map<String, String> map1 = toMap ( properties );
     Map<String, String> map2 = getSubProperties ( DataServerConstants.KAFKA_CONSUMER_PREFIX ,map1);

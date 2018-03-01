@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -68,6 +69,8 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
   private KeyType keyType;
   private byte[] payload;
   private AEPDataObject aepDataObject;
+//  private Map<String,Object> mapDataObject;
+
   private ByteBuf byteBuf = Unpooled.buffer(256);
 
   private Random random = new Random(System.currentTimeMillis());
@@ -107,10 +110,11 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
   }
 
   @Override
-  public void initialize( AEPDataObject aepDataObject,Event event, byte[] cf) {
+  public void initialize(AEPDataObject aepDataObject, Event event, byte[] cf) {
     this.payload = event.getBody();
     this.cf = cf;
     this.aepDataObject = aepDataObject;
+//    this.mapDataObject = aepDataObject;
   }
 
 
@@ -126,7 +130,7 @@ public class SimpleAEPHbaseEventSerializer implements AEPHbaseEventSerializer {
     byteBuf.writeInt(random.nextInt());
 
     String sss = ByteBufUtil.prettyHexDump(byteBuf);
-    logger.info("KEY::::{}----",sss);
+    logger.info("Hbase KEY:|{}|",sss);
 
     byte[] rowKey = new byte[ byteBuf.readableBytes() ];
     byteBuf.readBytes(rowKey);

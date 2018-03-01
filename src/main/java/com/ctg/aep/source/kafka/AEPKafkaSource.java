@@ -136,6 +136,8 @@ public class AEPKafkaSource extends AbstractPollableSource
   private boolean useKerberos = false;
   private String jaasFile = null;
 
+  private Boolean debugMode = false;
+
   /**
    * This class is a helper to subscribe for topics by using
    * different strategies
@@ -271,29 +273,29 @@ public class AEPKafkaSource extends AbstractPollableSource
           headers.put(AEPKafkaSourceConstants.KEY_HEADER, kafkaKey);
         }
 
-        log.info("++KafkaMsg:"+new String(eventBody));
+        log.info("KafkaMsg:{}-{}:{}",message.topic(),message.partition(),new String(eventBody));
 
-        if (log.isTraceEnabled()) {
-          if (LogPrivacyUtil.allowLogRawData()) {
-            log.trace("Topic: {} Partition: {} Message: {}", new String[]{
-                message.topic(),
-                String.valueOf(message.partition()),
-                new String(eventBody)
-            });
-          } else {
-            log.trace("Topic: {} Partition: {} Message arrived.",
-                message.topic(),
-                String.valueOf(message.partition()));
-          }
-        }
+//        if (log.isTraceEnabled()) {
+//          if (LogPrivacyUtil.allowLogRawData()) {
+//            log.trace("Topic: {} Partition: {} Message: {}", new String[]{
+//                message.topic(),
+//                String.valueOf(message.partition()),
+//                new String(eventBody)
+//            });
+//          } else {
+//            log.trace("Topic: {} Partition: {} Message arrived.",
+//                message.topic(),
+//                String.valueOf(message.partition()));
+//          }
+//        }
 
         event = EventBuilder.withBody(eventBody, headers);
         eventList.add(event);
 
-        if (log.isDebugEnabled()) {
-          log.debug("Waited: {} ", System.currentTimeMillis() - batchStartTime);
-          log.debug("Event #: {}", eventList.size());
-        }
+//        if (log.isDebugEnabled()) {
+          log.info("Waited: {} ", System.currentTimeMillis() - batchStartTime);
+          log.info("Event #: {}", eventList.size());
+//        }
 
         // For each partition store next offset that is going to be read.
         tpAndOffsetMetadata.put(new TopicPartition(message.topic(), message.partition()),
@@ -305,9 +307,9 @@ public class AEPKafkaSource extends AbstractPollableSource
         counter.addToEventReceivedCount((long) eventList.size());
         getChannelProcessor().processEventBatch(eventList);
         counter.addToEventAcceptedCount(eventList.size());
-        if (log.isDebugEnabled()) {
-          log.debug("Wrote {} events to channel", eventList.size());
-        }
+//        if (log.isDebugEnabled()) {
+          log.debug("Kafka Wrote {} events to channel", eventList.size());
+//        }
         eventList.clear();
 
         if (!tpAndOffsetMetadata.isEmpty()) {
@@ -370,6 +372,11 @@ public class AEPKafkaSource extends AbstractPollableSource
     useAvroEventFormat = context.getBoolean(AEPKafkaSourceConstants.AVRO_EVENT,
                                             AEPKafkaSourceConstants.DEFAULT_AVRO_EVENT);
 
+    debugMode = context.getBoolean("debug");
+    if( debugMode == null ){
+      debugMode = false;
+    }
+
     if (log.isDebugEnabled()) {
       log.debug(AEPKafkaSourceConstants.AVRO_EVENT + " set to: {}", useAvroEventFormat);
     }
@@ -409,6 +416,11 @@ public class AEPKafkaSource extends AbstractPollableSource
     if (groupId == null || groupId.isEmpty()) {
       groupId = DEFAULT_GROUP_ID;
       log.info("Group ID was not specified. Using {} as the group id.", groupId);
+    }
+
+    if( debugMode ){
+      groupId+=System.currentTimeMillis();
+      log.info("DEBUG MODE,Setting GroupId to :{}",groupId);
     }
 
 //    useKerberos = context.getBoolean(AEPKafkaSourceConstants.USE_KERBEROS);
@@ -531,6 +543,9 @@ public class AEPKafkaSource extends AbstractPollableSource
     kafkaProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,
                    AEPKafkaSourceConstants.DEFAULT_AUTO_COMMIT);
 
+    if( debugMode ){
+      kafkaProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
+    }
 
     //zws
 //    kafkaProps.put(AEPKafkaSourceConstants.KINIT_CMD,kinitCommand);

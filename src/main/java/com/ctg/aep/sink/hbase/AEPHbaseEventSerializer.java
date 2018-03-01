@@ -26,6 +26,7 @@ import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Row;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface for an event serializer which serializes the headers and body
@@ -41,6 +42,7 @@ public interface AEPHbaseEventSerializer extends Configurable, ConfigurableCompo
    * @param columnFamily Column family to write to
    */
   public void initialize ( AEPDataObject aepDataObject, Event event, byte[] columnFamily );
+//  public void initialize (Map<String,Object> aepDataObject, Event event, byte[] columnFamily );
 
   /**
    * Get the actions that should be written out to hbase as a result of this

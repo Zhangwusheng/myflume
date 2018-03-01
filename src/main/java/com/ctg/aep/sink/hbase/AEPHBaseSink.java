@@ -19,6 +19,8 @@
 package com.ctg.aep.sink.hbase;
 
 import com.ctg.aep.data.AEPDataObject;
+import com.ctg.aep.data.AEPDataObjectConstants;
+import com.ctg.aep.source.kafka.AEPKafkaSourceConstants;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -91,8 +93,10 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   private String uberTableName;
   private Boolean autoCreateNamespace;
   private AEPDataObject aepDataObject;
+//  private Map<String,Object> mapDataObject;
 //  private org.joda.time.DateTime
-  
+
+
   private Map<String,NamespaceDescriptor> stringNamespaceDescriptorMap = Maps.newHashMap (  );
   // Internal hooks used for unit testing.
   private DebugIncrementsCallback debugIncrCallback = null;
@@ -300,24 +304,36 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
   }
   
   private void getAEPDataObject(Event event){
+    this.aepDataObject = null;
+
     byte[] bodyBytes = event.getBody ();
     String body = new String ( bodyBytes );
 
     body = StringUtils.trim(body);
 
-    logger.info("Deserialize event.....");
+    logger.info("Deserialize event:|{}|",body);
     ByteBuf byteBuf = Unpooled.copiedBuffer ( bodyBytes );
     ByteBufUtil.prettyHexDump(byteBuf);
-    
+
+    Map<String,Object> mapDataObject = null;
+
     try {
-      aepDataObject = objectMapper.readValue (body, AEPDataObject.class );
+      mapDataObject = objectMapper.readValue(body, Map.class);
       logger.info("Deserialize event.....SUCCESS");
     }
     catch ( IOException e ) {
-      aepDataObject = null;
+      mapDataObject = null;
       logger.warn ( "Failed to deserialize:{} ",body );
-//      ByteBuf byteBuf = Unpooled.copiedBuffer ( bodyBytes );
-//      ByteBufUtil.prettyHexDump(byteBuf);
+      return;
+    }
+
+    this.aepDataObject = new AEPDataObject();
+    if( this.aepDataObject.initFromMap(mapDataObject,objectMapper)){
+      return;
+    }else{
+      this.aepDataObject = null;
+      logger.warn("HBASE: Success deserialize JSON,But Failed init AEPDataObject,mayube some fields losts,set aepDataObject to null ");
+      return;
     }
   }
   
@@ -330,10 +346,29 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
    * @param event
    * @return
    */
-  
+
+//  private Pair<String,String> getNamespaceAndTableName(Event event){
+//
+//    getAEPDataObject(event);
+//
+//    org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
+//    int yyyymm =  localDateTime.getYear()*100+localDateTime.getMonthOfYear();
+//    if( mapDataObject != null ) {
+//      String tenant =  mapDataObject.get(AEPDataObjectConstants.TENANTID).toString();
+//      String effTenant =tenant.replace("-","_");
+//      effTenant = "AEP_"+effTenant;
+//      String productId = mapDataObject.get(AEPDataObjectConstants.PRODUCTID).toString();
+//
+//      String tableName =effTenant+"_"+productId+"_"+String.format("%d",yyyymm)+"_status";
+//      return new Pair<> ( effTenant, tableName );
+//    }
+//    else {
+//      return new Pair<> ( uberNamespace, uberTableName );
+//    }
+//  }
   
   private Pair<String,String> getNamespaceAndTableName(Event event){
-  
+
     getAEPDataObject(event);
 
     org.joda.time.LocalDateTime localDateTime = new LocalDateTime();
@@ -341,6 +376,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     if( aepDataObject != null ) {
       String tenant = aepDataObject.getTenantId();
       String effTenant =tenant.replace("-","_");
+      effTenant = "AEP_"+effTenant;
       String productId = aepDataObject.getProductId();
 
       String tableName =effTenant+"_"+productId+"_"+String.format("%d",yyyymm)+"_status";

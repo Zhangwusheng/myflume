@@ -152,14 +152,37 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
       ByteBufUtil.prettyHexDump(byteBuf);
     }
 
+    logger.info("CtgCache Deserialize event:|{}|",body);
+
+    Map<String,Object> mapDataObject = null;
+
     try {
-      aepDataObject = objectMapper.readValue (body, AEPDataObject.class );
-      logger.info("Redis Deserialize event.....SUCCESS:{}",body);
+      mapDataObject = objectMapper.readValue(body, Map.class);
+      logger.info("Deserialize event.....SUCCESS");
     }
     catch ( IOException e ) {
-      aepDataObject = null;
+      mapDataObject = null;
       logger.warn ( "Failed to deserialize:{} ",body );
+      return;
     }
+
+    this.aepDataObject = new AEPDataObject();
+    if( this.aepDataObject.initFromMap(mapDataObject,objectMapper)){
+      return;
+    }else{
+      this.aepDataObject = null;
+      logger.warn("HBASE: Success deserialize JSON,But Failed init AEPDataObject,mayube some fields losts,set aepDataObject to null ");
+      return;
+    }
+
+//    try {
+//      aepDataObject = objectMapper.readValue (body, AEPDataObject.class );
+//      logger.info("Redis Deserialize event.....SUCCESS:{}",body);
+//    }
+//    catch ( IOException e ) {
+//      aepDataObject = null;
+//      logger.warn ( "Failed to deserialize:{} ",body );
+//    }
   }
 
 
@@ -169,15 +192,20 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     redisKey+="_";
     redisKey+=aepDataObject.getDeviceId();
 
-    String payload = aepDataObject.getPayload();
-
-    //解析失败，不影响下一条数据，所以直接返回
-    Map<String,Object> result;
-    try {
-      result = objectMapper.readValue(payload.getBytes(), Map.class);
-      logger.info("----------- CtgCache:decode Payload Success:"+payload);
-    } catch (IOException e) {
-      logger.info("*********** CtgCache:decode payload failed:"+payload);
+//    String payload = aepDataObject.getPayload();
+//
+//    //解析失败，不影响下一条数据，所以直接返回
+//    Map<String,Object> result;
+//    try {
+//      result = objectMapper.readValue(payload.getBytes(), Map.class);
+//      logger.info("----------- CtgCache:decode Payload Success:"+payload);
+//    } catch (IOException e) {
+//      logger.info("*********** CtgCache:decode payload failed:"+payload);
+//      return;
+//    }
+    Map<String,Object> result = aepDataObject.getPayloadMap();
+    if( result == null ){
+      logger.warn("aepDataObject.getPayloadMap returns NULL");
       return;
     }
 

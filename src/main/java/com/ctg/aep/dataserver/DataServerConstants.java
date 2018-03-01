@@ -22,7 +22,7 @@ public class DataServerConstants {
     public static final String KAFKA_CONSUMER_PREFIX=KAFKA_PREFIX+"consumer.";
     public static final String KAFKA_MAXBACKOFFSLEEP=KAFKA_PREFIX+"maxBackoffSleep";
     public static final String KAFKA_SECURITY_PROTOCOL=KAFKA_PREFIX+"security.protocol";
-
+    public static final String KAFKA_DEBUG_MODE=KAFKA_PREFIX+"debug";
 
     public static final String AEP_TOPIC_NAME = KAFKA_PREFIX+"topic";
     public static final String AEP_CONSUMER_GROUP=KAFKA_CONSUMER_PREFIX+"group.id";
