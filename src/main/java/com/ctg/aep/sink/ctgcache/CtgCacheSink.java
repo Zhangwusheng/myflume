@@ -192,7 +192,7 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     redisKey+="_";
     redisKey+=aepDataObject.getDeviceId();
 
-//    String payload = aepDataObject.getPayload();
+
 //
 //    //解析失败，不影响下一条数据，所以直接返回
 //    Map<String,Object> result;
@@ -209,12 +209,19 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
       return;
     }
 
+    String payload = aepDataObject.getPayload();
+    String code = cacheService.set(groupId, redisKey, payload);
+    if( !code.equals(CacheResponse.OK_CODE)) {
+      logger.error("CtgCache Failed returns:"+code+",Key="+redisKey+",vlaue="+payload);
+      throw new FlumeException("CtgCache returns:"+code+",Key="+redisKey+",vlaue="+payload);
+    }
+
     //CtgCache失败，这里抛出异常
     for (Map.Entry<String, Object> stringObjectEntry : result.entrySet()) {
       String itemKey =redisKey+"_"+stringObjectEntry.getKey();
       String value = stringObjectEntry.getValue().toString();
 
-      String code = cacheService.set(groupId, itemKey, value);
+      code = cacheService.set(groupId, itemKey, value);
       if( !code.equals(CacheResponse.OK_CODE)){
         logger.error("CtgCache Failed returns:"+code+",Key="+itemKey+",vlaue="+value);
         throw new FlumeException("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
