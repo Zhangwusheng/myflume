@@ -214,6 +214,8 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     if( !code.equals(CacheResponse.OK_CODE)) {
       logger.error("CtgCache Failed returns:"+code+",Key="+redisKey+",vlaue="+payload);
       throw new FlumeException("CtgCache returns:"+code+",Key="+redisKey+",vlaue="+payload);
+    }else{
+      logger.info("CtgCache Payload Success,Key="+redisKey+",vlaue="+payload);
     }
 
     //CtgCache失败，这里抛出异常
