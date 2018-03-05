@@ -22,5 +22,7 @@ rm -f log/aep*log
 
 #DEBUG_OPT="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=9999"
 
+kinit -k -t /etc/security/keytabs/odp.user.keytab odp/danalysis@DFS.COM
+
 export KAFKA_KERBEROS_CFG=" -Djava.security.auth.login.config=/etc/kafka/conf/kafka_odp_jaas_cache.conf"
 java ${DEBUG_OPT} ${KAFKA_KERBEROS_CFG} -Daep.home.dir=${DIR} -cp  "${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/lib/tools.jar:${CLASSPATH}" com.ctg.aep.dataserver.DataServerApplication -n aep -f ${DIR}/conf/aep-data-server.properties
