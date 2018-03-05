@@ -3,14 +3,14 @@
 
     <charset>UTF-8</charset>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-          <encoder>
-              <!--<pattern>[%d][%thread][%level][%logger{0}:%L]%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''} - %msg%n</pattern>-->
-              <!--<pattern>[%d][%thread][%level][%logger{0}]-%msg%n</pattern>-->
-              <pattern>[%d][%logger{0}[%level]-%msg%n</pattern>
-              <charset>UTF-8</charset>
-        </encoder>
-    </appender>
+    <!--<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">-->
+          <!--<encoder>-->
+              <!--&lt;!&ndash;<pattern>[%d][%thread][%level][%logger{0}:%L]%replace(%caller{1}){'\t|Caller.{1}0|\r\n', ''} - %msg%n</pattern>&ndash;&gt;-->
+              <!--&lt;!&ndash;<pattern>[%d][%thread][%level][%logger{0}]-%msg%n</pattern>&ndash;&gt;-->
+              <!--<pattern>[%d][%logger{0}[%level]-%msg%n</pattern>-->
+              <!--<charset>UTF-8</charset>-->
+        <!--</encoder>-->
+    <!--</appender>-->
 
     <appender name="FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
