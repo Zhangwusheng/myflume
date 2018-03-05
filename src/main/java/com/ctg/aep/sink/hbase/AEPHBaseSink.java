@@ -304,7 +304,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
 
     logger.info("Deserialize event:|{}|",body);
     ByteBuf byteBuf = Unpooled.copiedBuffer ( bodyBytes );
-    ByteBufUtil.prettyHexDump(byteBuf);
+    String tmp = ByteBufUtil.prettyHexDump(byteBuf);
 
     Map<String,Object> mapDataObject = null;
 
@@ -314,7 +314,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
     }
     catch ( IOException e ) {
       mapDataObject = null;
-      logger.warn ( "Failed to deserialize:{} ",body );
+      logger.warn ( "HBase Failed to deserialize:\n{} ",tmp );
       return;
     }
 
@@ -374,6 +374,7 @@ public class AEPHBaseSink extends AbstractSink implements Configurable {
       return new Pair<> ( effTenant, tableName );
     }
     else {
+      logger.info("aepDataObject is NULL!");
       return new Pair<> ( uberNamespace, uberTableName );
     }
   }
