@@ -145,8 +145,8 @@ public class AEPDataServerConfigurationProvider extends
             ,properties.getProperty ( DataServerConstants.AEP_KAFKA_JAAS_FILE  ));
   
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.type","org.apache.flume.channel.MemoryChannel");
-    convertedConfig.put (getAgentName()+".channels.memchannelHbase.capacity","100");
-    convertedConfig.put (getAgentName()+".channels.memchannelHbase.transactionCapacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelHbase.capacity","1000000");
+    convertedConfig.put (getAgentName()+".channels.memchannelHbase.transactionCapacity","1000000");
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.byteCapacityBufferPercentage","20");
     convertedConfig.put (getAgentName()+".channels.memchannelHbase.keep-alive","3");
 
@@ -157,8 +157,8 @@ public class AEPDataServerConfigurationProvider extends
 //    convertedConfig.put (getAgentName()+".channels.memchannelRedis.keep-alive","3");
 
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.type","org.apache.flume.channel.MemoryChannel");
-    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.capacity","100");
-    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.transactionCapacity","100");
+    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.capacity","1000000");
+    convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.transactionCapacity","1000000");
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.byteCapacityBufferPercentage","20");
     convertedConfig.put (getAgentName()+".channels.memchannelCtgCache.keep-alive","3");
 
