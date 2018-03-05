@@ -146,23 +146,25 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
     String body = new String ( bodyBytes );
     body = StringUtils.trim(body);
 
-    if( logger.isDebugEnabled()) {
-      logger.info("Deserialize event.....");
-      ByteBuf byteBuf = Unpooled.copiedBuffer(bodyBytes);
-      ByteBufUtil.prettyHexDump(byteBuf);
-    }
+//    if( logger.isDebugEnabled()) {
+//      logger.info("Deserialize event.....");
+//      ByteBuf byteBuf = Unpooled.copiedBuffer(bodyBytes);
+//      ByteBufUtil.prettyHexDump(byteBuf);
+//    }
 
-    logger.info("CtgCache Deserialize event:|{}|",body);
+//    logger.info("CtgCache Deserialize event:|{}|",body);
 
     Map<String,Object> mapDataObject = null;
 
     try {
       mapDataObject = objectMapper.readValue(body, Map.class);
-      logger.info("Deserialize event.....SUCCESS");
+      logger.info("Deserialize event.....SUCCESS:{}",body);
     }
     catch ( IOException e ) {
       mapDataObject = null;
-      logger.warn ( "Failed to deserialize:{} ",body );
+        ByteBuf byteBuf = Unpooled.copiedBuffer(bodyBytes);
+        String temp = ByteBufUtil.prettyHexDump(byteBuf);
+      logger.warn ( "Failed to deserialize:\n{} ",temp );
       return;
     }
 
