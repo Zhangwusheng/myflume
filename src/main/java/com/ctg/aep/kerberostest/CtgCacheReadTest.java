@@ -4,9 +4,7 @@ import com.ctg.itrdc.cache.common.exception.CacheConfigException;
 import com.ctg.itrdc.cache.core.CacheService;
 import org.apache.flume.FlumeException;
 
-import java.util.*;
-
-public class CtgCacheTest {
+public class CtgCacheReadTest {
 
     CacheService cacheService;
     String  groupId = "group.AEP.storage";
@@ -38,17 +36,17 @@ public class CtgCacheTest {
     public void testRead(String key){
         String value = cacheService.get(groupId,key);
 
-        System.out.println("-------------------------");
+        System.out.println("\n\n\n-------------------------");
         System.out.printf(key+"="+value);
         System.out.println("-------------------------");
     }
 
     public static void main(String[] args) {
-        CtgCacheTest ctgCacheTest = new CtgCacheTest();
+        CtgCacheReadTest ctgCacheTest = new CtgCacheReadTest();
         ctgCacheTest.init();
-        ctgCacheTest.testWriteAndRead();
+//        ctgCacheTest.testWriteAndRead();
 
 
-//        ctgCacheTest.testRead(args[0]);
+        ctgCacheTest.testRead(args[0]);
     }
 }
