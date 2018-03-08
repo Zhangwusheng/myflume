@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -61,6 +62,15 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
   private String passwd;
   private boolean using_hash;
   private long timeout;
+  //redis的value是个json，包含了时间戳和value
+
+
+  public static class RedisValue{
+    public String value;
+    public long timestamp;
+  }
+
+  private RedisValue redisValue = new RedisValue();
 
   public CtgCacheSink() {
   }
@@ -225,12 +235,23 @@ public class CtgCacheSink extends AbstractSink implements Configurable {
       String itemKey =redisKey+"_"+stringObjectEntry.getKey();
       String value = stringObjectEntry.getValue().toString();
 
-      code = cacheService.set(groupId, itemKey, value);
+      redisValue.value = value;
+      redisValue.timestamp = aepDataObject.getTimestamp();
+
+      String redisJsonValue = null;
+
+      try {
+        redisJsonValue     = objectMapper.writeValueAsString(redisValue);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      code = cacheService.set(groupId, itemKey, redisJsonValue);
       if( !code.equals(CacheResponse.OK_CODE)){
-        logger.error("CtgCache Failed returns:"+code+",Key="+itemKey+",vlaue="+value);
-        throw new FlumeException("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+value);
+        logger.error("CtgCache Failed returns:"+code+",Key="+itemKey+",vlaue="+redisJsonValue);
+        throw new FlumeException("CtgCache returns:"+code+",Key="+itemKey+",vlaue="+redisJsonValue);
       }else{
-        logger.info("CtgCache Set Success:Key="+itemKey+",vlaue="+value);
+        logger.info("CtgCache Set Success:Key="+itemKey+",vlaue="+redisJsonValue);
       }
     }
   }
